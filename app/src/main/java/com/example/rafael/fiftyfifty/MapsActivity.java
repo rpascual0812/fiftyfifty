@@ -28,6 +28,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor> {
@@ -121,14 +122,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
                 input.setLayoutParams(lp);
                 alertDialog.setView(input);
-                alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                alertDialog.setPositiveButton("SET MESSAGE", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // Write your code here to execute after dialog
                         Toast.makeText(getApplicationContext(),"Mark Placed", Toast.LENGTH_SHORT).show();
                     }
                 });
-                alertDialog.setNegativeButton("NO",
-                        new DialogInterface.OnClickListener() {
+                alertDialog.setNegativeButton("DON'T SET MESSAGE", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Write your code here to execute after dialog
                                 dialog.cancel();
@@ -149,6 +149,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 editor.putString("zoom", Float.toString(mMap.getCameraPosition().zoom)); /** Storing the zoom level to the shared preferences */
                 editor.commit(); /** Saving the values stored in the shared preferences */
             }
+
         });
         sharedPreferences = getSharedPreferences("location", 0);
         locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
@@ -161,17 +162,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 lng = sharedPreferences.getString("lng"+i,"0"); // Getting the longitude of the i-th location
                 drawMarker(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
             }
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))); // Moving CameraPosition to last clicked position
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(Float.parseFloat(zoom))); // Setting the zoom level in the map on last position  is clicked
+            LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+            CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+                    .target(pos)      // Sets the center of the map to Mountain View
+                    .zoom(17)                   // Sets the zoom
+                    .bearing(90)                // Sets the orientation of the camera to east
+                    .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                    .build();                   // Creates a CameraPosition from the builder
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            //googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))); // Moving CameraPosition to last clicked position
+            //googleMap.animateCamera(CameraUpdateFactory.zoomTo(Float.parseFloat(zoom))); // Setting the zoom level in the map on last position  is clicked
         }
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(final Marker marker) {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                alertDialog.setTitle("You want to delete this marker?");
+                alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        marker.remove();
+                    }
+                });
+                alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Write your code here to execute after dialog
+                        dialog.cancel();
+                    }
+                });
+                alertDialog.show();
+                return true;
+            }
+        });
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
-                mMap.clear(); // Removing the marker and circle from the Google Map
-                SharedPreferences.Editor editor = sharedPreferences.edit(); // Opening the editor object to delete data from sharedPreferences
-                editor.clear(); // Clearing the editor
-                editor.commit(); // Committing the changes
-                locationCount=0; // Setting locationCount to zero
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                alertDialog.setTitle("You want to delete all markers?");
+                alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mMap.clear(); // Removing the marker and circle from the Google Map
+                        SharedPreferences.Editor editor = sharedPreferences.edit(); // Opening the editor object to delete data from sharedPreferences
+                        editor.clear(); // Clearing the editor
+                        editor.commit(); // Committing the changes
+                        locationCount=0; // Setting locationCount to zero
+                    }
+                });
+                alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Write your code here to execute after dialog
+                        dialog.cancel();
+                    }
+                });
+                alertDialog.show();
             }
         });
     }
@@ -179,7 +223,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void drawMarker(LatLng point){
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
-        mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))); // Adding marker on the Google Map
+        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))); // Adding marker on the Google Map
     }
 
     private class LocationInsertTask extends AsyncTask<ContentValues, Void, Void> {
