@@ -1,28 +1,31 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context=".MapsActivity">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         tools:context="com.example.rafael.fiftyfifty.MapsActivity" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <EditText
-            android:layout_width="256dp"
-            android:layout_height="63dp"
-            android:id="@+id/Search"
-            android:inputType="text"
-            android:hint="@string/search" />
-
     </LinearLayout>
+
+    <EditText
+        android:layout_width="183dp"
+        android:layout_height="63dp"
+        android:id="@+id/Search"
+        android:inputType="text"
+        android:hint="@string/search"
+        android:layout_gravity="center_horizontal|top" />
 </FrameLayout>
