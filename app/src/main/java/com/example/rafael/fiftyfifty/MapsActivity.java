@@ -1,7 +1,9 @@
 package com.example.rafael.fiftyfifty;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -37,6 +39,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double longitude;
     SharedPreferences sharedPreferences;
     int locationCount = 0;
+    final Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,25 +126,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                        locationCount++;
-                       /* AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
-                        alertDialog.setTitle("Set a message for marker");
-                        final EditText input = new EditText(MapsActivity.this);
-                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
-                        input.setLayoutParams(lp);
-                        alertDialog.setView(input);
-                        alertDialog.setPositiveButton("SET MESSAGE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(),"Mark Placed",Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                        alertDialog.setNegativeButton("LEAVE IT BLANK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-                        alertDialog.show();*/
                         drawMarker(latLng);
                         ContentValues contentValues = new ContentValues();
                         contentValues.put(LocationsDB.FIELD_LAT, latLng.latitude); // Setting latitude in ContentValues
@@ -157,26 +141,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         editor.commit();
                     }
                 });
-                sharedPreferences = getSharedPreferences("location", 0);
-                locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
-                String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
-                if (locationCount != 0) { // If locations are already saved
-                    String lat = "";
-                    String lng = "";
-                    for (int i = 0; i < locationCount; i++) { // Iterating through all the locations stored
-                        lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
-                        lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
-                        drawMarker(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
-                        LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
-                        CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
-                                .target(pos)      // Sets the center of the map to Mountain View
-                                .zoom(17)                   // Sets the zoom
-                                .bearing(90)                // Sets the orientation of the camera to east
-                                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
-                                .build();                   // Creates a CameraPosition from the builder
-                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    }
-                }
                 alertdialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -186,6 +150,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 alertdialog.show();
             }
         });
+        sharedPreferences = getSharedPreferences("location", 0);
+        locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
+        String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
+        if (locationCount != 0) { // If locations are already saved
+            String lat = "";
+            String lng = "";
+            for (int i = 0; i < locationCount; i++) { // Iterating through all the locations stored
+                lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
+                lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
+                drawMarker(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
+                LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+                /*CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+                        .target(pos)      // Sets the center of the map to Mountain View
+                        .zoom(17)                   // Sets the zoom
+                        .bearing(90)                // Sets the orientation of the camera to east
+                        .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                        .build();                   // Creates a CameraPosition from the builder
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));*/
+            }
+        }
 
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
@@ -195,8 +179,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public View getInfoContents(Marker arg0) {
-                View v= getLayoutInflater().inflate(R.layout.markershow,null);
+                View v= getLayoutInflater().inflate(R.layout.infoshow,null);
                 return v;
+            }
+        });
+
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                final Dialog dialog = new Dialog(context);
+                dialog.setContentView(R.layout.markershow);
+                dialog.show();
+                marker.hideInfoWindow();
             }
         });
 
