@@ -15,12 +15,6 @@
         android:layout_height="fill_parent"
         tools:context="com.example.rafael.fiftyfifty.MapsActivity" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    </LinearLayout>
-
     <EditText
         android:layout_width="183dp"
         android:layout_height="63dp"

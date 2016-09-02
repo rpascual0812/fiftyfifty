@@ -2,4 +2,8 @@
     <string name="app_name">FiftyFifty</string>
     <string name="title_activity_maps">Map</string>
     <string name="search">Search</string>
+    <string name="message">Message</string>
+    <string name="latitude">latitude</string>
+    <string name="longitude">longitude</string>
+    <string name="remove">Remove</string>
 </resources>

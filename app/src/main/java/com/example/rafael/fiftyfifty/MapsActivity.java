@@ -17,9 +17,8 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,7 +30,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor> {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.InfoWindowAdapter {
 
     private GoogleMap mMap;
     private double latitude;
@@ -61,13 +60,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         EditText searchLocation;
-
+        mMap.setBuildingsEnabled(false);
         GPSTracker gps = new GPSTracker(this);
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
             LatLng current_location = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are"));
+            //mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are"));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -84,11 +83,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.animateCamera(CameraUpdateFactory.zoomIn()); // Zoom in, animating the camera.
             mMap.animateCamera(CameraUpdateFactory.zoomTo(50), 2000, null);  // Zoom out to zoom level 10, animating with a duration of 2 seconds.
             CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
-                .target(current_location)      // Sets the center of the map to Mountain View
-                .zoom(17)                   // Sets the zoom
-                .bearing(90)                // Sets the orientation of the camera to east
-                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
-                .build();                   // Creates a CameraPosition from the builder
+                    .target(current_location)      // Sets the center of the map to Mountain View
+                    .zoom(17)                   // Sets the zoom
+                    .bearing(90)                // Sets the orientation of the camera to east
+                    .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                    .build();                   // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 //            mMap.setMinZoomPreference(6.0f);
 //            mMap.setMaxZoomPreference(14.0f);
@@ -97,14 +96,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //
 //            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(AUSTRALIA, 0));
         }
-        searchLocation = (EditText)findViewById(R.id.Search);
-        searchLocation.addTextChangedListener(new TextWatcher(){
+        searchLocation = (EditText) findViewById(R.id.Search);
+        searchLocation.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
+
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
+
             @Override
             public void afterTextChanged(Editable editable) {
                 LatLng current_location = new LatLng(latitude, longitude);
@@ -112,88 +113,93 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             }
         });
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
-            public void onMapClick(LatLng latLng) {
-                locationCount++;
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
-                alertDialog.setTitle("Place your mark here");
-                final EditText input = new EditText(MapsActivity.this);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-                input.setLayoutParams(lp);
-                alertDialog.setView(input);
-                alertDialog.setPositiveButton("SET MESSAGE", new DialogInterface.OnClickListener() {
+            public void onMapClick(final LatLng latLng) {
+                AlertDialog.Builder alertdialog = new AlertDialog.Builder(MapsActivity.this);
+                alertdialog.setTitle("Are you sure to place a marker here?");
+                alertdialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // Write your code here to execute after dialog
-                        Toast.makeText(getApplicationContext(),"Mark Placed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                alertDialog.setNegativeButton("DON'T SET MESSAGE", new DialogInterface.OnClickListener() {
+                       locationCount++;
+                       /* AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                        alertDialog.setTitle("Set a message for marker");
+                        final EditText input = new EditText(MapsActivity.this);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
+                        input.setLayoutParams(lp);
+                        alertDialog.setView(input);
+                        alertDialog.setPositiveButton("SET MESSAGE", new DialogInterface.OnClickListener() {
+                            @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                // Write your code here to execute after dialog
+                                Toast.makeText(getApplicationContext(),"Mark Placed",Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        alertDialog.setNegativeButton("LEAVE IT BLANK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
                                 dialog.cancel();
                             }
                         });
-                alertDialog.show();
-                drawMarker(latLng); // Drawing marker on the map
-                ContentValues contentValues = new ContentValues(); // Creating an instance of ContentValues
-                contentValues.put(LocationsDB.FIELD_LAT, latLng.latitude ); // Setting latitude in ContentValues
-                contentValues.put(LocationsDB.FIELD_LNG, latLng.longitude); // Setting longitude in ContentValues
-                contentValues.put(LocationsDB.FIELD_ZOOM, mMap.getCameraPosition().zoom); // Setting zoom in ContentValues
-                LocationInsertTask insertTask = new LocationInsertTask(); // Creating an instance of LocationInsertTask
-                insertTask.execute(contentValues); // Storing the latitude, longitude and zoom level to SQLite database
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("lat"+ Integer.toString((locationCount-1)), Double.toString(latLng.latitude)); // Storing the latitude for the i-th location
-                editor.putString("lng"+ Integer.toString((locationCount-1)), Double.toString(latLng.longitude));  // Storing the longitude for the i-th location
-                editor.putInt("locationCount", locationCount); // Storing the count of locations or marker count
-                editor.putString("zoom", Float.toString(mMap.getCameraPosition().zoom)); /** Storing the zoom level to the shared preferences */
-                editor.commit(); /** Saving the values stored in the shared preferences */
-            }
-
-        });
-        sharedPreferences = getSharedPreferences("location", 0);
-        locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
-        String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
-        if(locationCount!=0){ // If locations are already saved
-            String lat = "";
-            String lng = "";
-            for(int i=0;i<locationCount;i++){ // Iterating through all the locations stored
-                lat = sharedPreferences.getString("lat"+i,"0"); // Getting the latitude of the i-th location
-                lng = sharedPreferences.getString("lng"+i,"0"); // Getting the longitude of the i-th location
-                drawMarker(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
-            }
-            LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
-            CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
-                    .target(pos)      // Sets the center of the map to Mountain View
-                    .zoom(17)                   // Sets the zoom
-                    .bearing(90)                // Sets the orientation of the camera to east
-                    .tilt(30)                   // Sets the tilt of the camera to 30 degrees
-                    .build();                   // Creates a CameraPosition from the builder
-            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            //googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)))); // Moving CameraPosition to last clicked position
-            //googleMap.animateCamera(CameraUpdateFactory.zoomTo(Float.parseFloat(zoom))); // Setting the zoom level in the map on last position  is clicked
-        }
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(final Marker marker) {
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
-                alertDialog.setTitle("You want to delete this marker?");
-                alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        marker.remove();
+                        alertDialog.show();*/
+                        drawMarker(latLng);
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(LocationsDB.FIELD_LAT, latLng.latitude); // Setting latitude in ContentValues
+                        contentValues.put(LocationsDB.FIELD_LNG, latLng.longitude); // Setting longitude in ContentValues
+                        contentValues.put(LocationsDB.FIELD_ZOOM, mMap.getCameraPosition().zoom); // Setting zoom in ContentValues
+                        LocationInsertTask insertTask = new LocationInsertTask(); // Creating an instance of LocationInsertTask
+                        insertTask.execute(contentValues); // Storing the latitude, longitude and zoom level to SQLite database
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("lat" + Integer.toString((locationCount - 1)), Double.toString(latLng.latitude)); // Storing the latitude for the i-th location
+                        editor.putString("lng" + Integer.toString((locationCount - 1)), Double.toString(latLng.longitude));  // Storing the longitude for the i-th location
+                        editor.putInt("locationCount", locationCount); // Storing the count of locations or marker count
+                        editor.putString("zoom", Float.toString(mMap.getCameraPosition().zoom));
+                        editor.commit();
                     }
                 });
-                alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                sharedPreferences = getSharedPreferences("location", 0);
+                locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
+                String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
+                if (locationCount != 0) { // If locations are already saved
+                    String lat = "";
+                    String lng = "";
+                    for (int i = 0; i < locationCount; i++) { // Iterating through all the locations stored
+                        lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
+                        lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
+                        drawMarker(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
+                        LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+                        CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+                                .target(pos)      // Sets the center of the map to Mountain View
+                                .zoom(17)                   // Sets the zoom
+                                .bearing(90)                // Sets the orientation of the camera to east
+                                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                                .build();                   // Creates a CameraPosition from the builder
+                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    }
+                }
+                alertdialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // Write your code here to execute after dialog
                         dialog.cancel();
                     }
                 });
-                alertDialog.show();
-                return true;
+                alertdialog.show();
             }
         });
+
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker arg0) {
+                View v= getLayoutInflater().inflate(R.layout.markershow,null);
+                return v;
+            }
+        });
+
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
@@ -220,10 +226,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+
     private void drawMarker(LatLng point){
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
-        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))); // Adding marker on the Google Map
+        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.male))); // Adding marker on the Google Map
+    }
+
+    @Override
+    public View getInfoWindow(Marker marker) {
+        return null;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        return null;
     }
 
     private class LocationInsertTask extends AsyncTask<ContentValues, Void, Void> {
