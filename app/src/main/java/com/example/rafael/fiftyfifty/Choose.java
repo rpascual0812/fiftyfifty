@@ -11,6 +11,7 @@ import android.widget.ImageView;
  */
 public class Choose extends AppCompatActivity{
     ImageView driver;
+    ImageView passenger;
     @Override
     public void onCreate (Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -21,6 +22,15 @@ public class Choose extends AppCompatActivity{
             public void onClick(View v) {
                 driver.setImageResource(R.drawable.wheel2);
                 Intent intent = new Intent(getApplicationContext(),MapsActivity.class);
+                startActivity(intent);
+            }
+        });
+        passenger = (ImageView) findViewById(R.id.pass);
+        passenger.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                passenger.setImageResource(R.drawable.passenger2);
+                Intent intent = new Intent(getApplicationContext(),PassengerActivity.class);
                 startActivity(intent);
             }
         });
