@@ -6,4 +6,5 @@
     <string name="latitude">latitude</string>
     <string name="longitude">longitude</string>
     <string name="hello">HELLO</string>
+    <string name="choose_your_status">Choose your Status</string>
 </resources>
