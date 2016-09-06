@@ -165,7 +165,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onInfoWindowClick(Marker marker) {
                 final Dialog dialog = new Dialog(context);
-                dialog.setContentView(R.layout.markershow);
+                dialog.setContentView(R.layout.drivershow);
                 dialog.show();
                 marker.hideInfoWindow();
             }
@@ -201,7 +201,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void drawMarker(LatLng point){
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
-        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.male))); // Adding marker on the Google Map
+        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
     }
 
     @Override

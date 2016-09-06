@@ -39,7 +39,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     private double latitude;
     private double longitude;
     SharedPreferences sharedPreferences;
-    int locationCount = 0;
+    int locationCount2 = 0;
     final Context context = this;
 
     @Override
@@ -102,18 +102,18 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                 alertdialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        locationCount++;
+                        locationCount2++;
                         drawMarker(latLng);
                         ContentValues contentValues = new ContentValues();
-                        contentValues.put(LocationsDB.FIELD_LAT, latLng.latitude); // Setting latitude in ContentValues
-                        contentValues.put(LocationsDB.FIELD_LNG, latLng.longitude); // Setting longitude in ContentValues
-                        contentValues.put(LocationsDB.FIELD_ZOOM, mMap.getCameraPosition().zoom); // Setting zoom in ContentValues
+                        contentValues.put(PassLocationsDB.FIELD_LAT, latLng.latitude); // Setting latitude in ContentValues
+                        contentValues.put(PassLocationsDB.FIELD_LNG, latLng.longitude); // Setting longitude in ContentValues
+                        contentValues.put(PassLocationsDB.FIELD_ZOOM, mMap.getCameraPosition().zoom); // Setting zoom in ContentValues
                         LocationInsertTask insertTask = new LocationInsertTask(); // Creating an instance of LocationInsertTask
                         insertTask.execute(contentValues); // Storing the latitude, longitude and zoom level to SQLite database
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("lat" + Integer.toString((locationCount - 1)), Double.toString(latLng.latitude)); // Storing the latitude for the i-th location
-                        editor.putString("lng" + Integer.toString((locationCount - 1)), Double.toString(latLng.longitude));  // Storing the longitude for the i-th location
-                        editor.putInt("locationCount", locationCount); // Storing the count of locations or marker count
+                        editor.putString("lat" + Integer.toString((locationCount2 - 1)), Double.toString(latLng.latitude)); // Storing the latitude for the i-th location
+                        editor.putString("lng" + Integer.toString((locationCount2 - 1)), Double.toString(latLng.longitude));  // Storing the longitude for the i-th location
+                        editor.putInt("locationCount2", locationCount2); // Storing the count of locations or marker count
                         editor.putString("zoom", Float.toString(mMap.getCameraPosition().zoom));
                         editor.commit();
                     }
@@ -127,13 +127,13 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                 alertdialog.show();
             }
         });
-        sharedPreferences = getSharedPreferences("location", 0);
-        locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
+        sharedPreferences = getSharedPreferences("passengers", 0);
+        locationCount2 = sharedPreferences.getInt("locationCount2", 0); // Getting number of locations already stored
         String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
-        if (locationCount != 0) { // If locations are already saved
+        if (locationCount2 != 0) { // If locations are already saved
             String lat = "";
             String lng = "";
-            for (int i = 0; i < locationCount; i++) { // Iterating through all the locations stored
+            for (int i = 0; i < locationCount2; i++) { // Iterating through all the locations stored
                 lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
                 lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
                 drawMarker(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
@@ -158,7 +158,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
             @Override
             public void onInfoWindowClick(Marker marker) {
                 final Dialog dialog = new Dialog(context);
-                dialog.setContentView(R.layout.drivershow);
+                dialog.setContentView(R.layout.markershow);
                 dialog.show();
                 marker.hideInfoWindow();
             }
@@ -176,7 +176,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                         SharedPreferences.Editor editor = sharedPreferences.edit(); // Opening the editor object to delete data from sharedPreferences
                         editor.clear(); // Clearing the editor
                         editor.commit(); // Committing the changes
-                        locationCount=0; // Setting locationCount to zero
+                        locationCount2=0; // Setting locationCount to zero
                     }
                 });
                 alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -193,7 +193,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     private void drawMarker(LatLng point){
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
-        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
+        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.male))); // Adding marker on the Google Map
     }
     @Override
     public View getInfoWindow(Marker marker) {
@@ -208,7 +208,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     private class LocationInsertTask extends AsyncTask<ContentValues, Void, Void> {
         @Override
         protected Void doInBackground(ContentValues... contentValues) {
-            getContentResolver().insert(LocationsContentProvider.CONTENT_URI, contentValues[0]); /** Setting up values to insert the clicked location into SQLite database */
+            getContentResolver().insert(PassengerLocationsContentProvider.CONTENT_URI, contentValues[0]); /** Setting up values to insert the clicked location into SQLite database */
             return null;
         }
     }
@@ -216,14 +216,14 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     private class LocationDeleteTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            getContentResolver().delete(LocationsContentProvider.CONTENT_URI, null, null);  /** Deleting all the locations stored in SQLite database */
+            getContentResolver().delete(PassengerLocationsContentProvider.CONTENT_URI, null, null);  /** Deleting all the locations stored in SQLite database */
             return null;
         }
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri uri = LocationsContentProvider.CONTENT_URI; // Uri to the content provider LocationsContentProvider
+        Uri uri = PassengerLocationsContentProvider.CONTENT_URI; // Uri to the content provider LocationsContentProvider
         return new CursorLoader(this, uri, null, null, null, null); // Fetches all the rows from locations table
     }
 
@@ -236,9 +236,9 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
         locationCount = arg1.getCount(); // Number of locations available in the SQLite database table
         arg1.moveToFirst(); // Move the current record pointer to the first row of the table
         for (int i = 0; i < locationCount; i++) {
-            lat = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LAT)); // Get the latitude
-            lng = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LNG)); // Get the longitude
-            zoom = arg1.getFloat(arg1.getColumnIndex(LocationsDB.FIELD_ZOOM)); // Get the zoom level
+            lat = arg1.getDouble(arg1.getColumnIndex(PassLocationsDB.FIELD_LAT)); // Get the latitude
+            lng = arg1.getDouble(arg1.getColumnIndex(PassLocationsDB.FIELD_LNG)); // Get the longitude
+            zoom = arg1.getFloat(arg1.getColumnIndex(PassLocationsDB.FIELD_ZOOM)); // Get the zoom level
             LatLng location = new LatLng(lat, lng); // Creating an instance of LatLng to plot the location in Google Maps
             drawMarker(location); // Drawing the marker in the Google Maps
             arg1.moveToNext(); // Traverse the pointer to the next row

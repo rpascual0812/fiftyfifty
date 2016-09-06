@@ -48,8 +48,8 @@
             </intent-filter>
         </activity>
         <provider
-            android:name="LocationsContentProvider"
-            android:authorities="in.wptrafficanalyzer.locationmarkersqlite.locations"
+            android:name=".LocationsContentProvider"
+            android:authorities="com.example.rafael.fiftyfifty"
             android:exported="false" />
         <activity android:name=".Choose">
             <intent-filter>
@@ -65,6 +65,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".PassengerLocationsContentProvider"
+            android:authorities="com.example.rafael.fiftyfifty"
+            android:exported="true" />
     </application>
 
 </manifest>

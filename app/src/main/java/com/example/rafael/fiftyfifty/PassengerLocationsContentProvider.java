@@ -10,32 +10,30 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 
 /**
- * Created by pogi on 9/1/2016.
+ * Created by pogi on 9/6/2016.
  */
-public class LocationsContentProvider extends ContentProvider {
-
+public class PassengerLocationsContentProvider extends ContentProvider {
     public static final String PROVIDER_NAME = "com.example.rafael.fiftyfifty";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/locations" ); /** A uri to do operations on locations table. A content provider is identified by its uri */
-    private static final int LOCATIONS = 1;/** Constant to identify the requested operation */
-    private static final UriMatcher uriMatcher ;
-
+    public static final Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/passengers" ); /** A uri to do operations on locations table. A content provider is identified by its uri */
+    private static final int LOCATIONS2 = 1;/** Constant to identify the requested operation */
+    private static final UriMatcher uriMatcher;
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(PROVIDER_NAME, "locations", LOCATIONS);
+        uriMatcher.addURI(PROVIDER_NAME, "passengers", LOCATIONS2);
     }
-    LocationsDB mLocationsDB; /** This content provider does the database operations by this object */
+    PassLocationsDB passLocationsDB; /** This content provider does the database operations by this object */
 
     @Override
     public boolean onCreate() {
-        mLocationsDB = new LocationsDB(getContext());
+        passLocationsDB = new PassLocationsDB(getContext());
         return true;
     }
 
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        if(uriMatcher.match(uri)==LOCATIONS){
-            return mLocationsDB.getAllLocations();
+        if(uriMatcher.match(uri)==LOCATIONS2){
+            return passLocationsDB.getAllLocations();
         }
         return null;
     }
@@ -49,7 +47,7 @@ public class LocationsContentProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        long rowID = mLocationsDB.insert(values);
+        long rowID = passLocationsDB.insert(values);
         Uri _uri=null;
         if(rowID>0){
             _uri = ContentUris.withAppendedId(CONTENT_URI, rowID);
@@ -66,7 +64,7 @@ public class LocationsContentProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         int cnt = 0;
-        cnt = mLocationsDB.del();
+        cnt = passLocationsDB.del();
         return cnt;
     }
 
