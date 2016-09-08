@@ -39,7 +39,8 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     private double latitude;
     private double longitude;
     SharedPreferences sharedPreferences;
-    int locationCount2 = 0;
+    SharedPreferences sharedPreferences2;
+    int locationCount2 = 0, locationCount = 0;
     final Context context = this;
 
     @Override
@@ -114,7 +115,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                         editor.putString("lat" + Integer.toString((locationCount2 - 1)), Double.toString(latLng.latitude)); // Storing the latitude for the i-th location
                         editor.putString("lng" + Integer.toString((locationCount2 - 1)), Double.toString(latLng.longitude));  // Storing the longitude for the i-th location
                         editor.putInt("locationCount2", locationCount2); // Storing the count of locations or marker count
-                        editor.putString("zoom", Float.toString(mMap.getCameraPosition().zoom));
+                        editor.putString("zoom2", Float.toString(mMap.getCameraPosition().zoom));
                         editor.commit();
                     }
                 });
@@ -129,7 +130,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
         });
         sharedPreferences = getSharedPreferences("passengers", 0);
         locationCount2 = sharedPreferences.getInt("locationCount2", 0); // Getting number of locations already stored
-        String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
+        String zoom = sharedPreferences.getString("zoom2", "0"); // Getting stored zoom level if exists else return 0
         if (locationCount2 != 0) { // If locations are already saved
             String lat = "";
             String lng = "";
@@ -141,15 +142,15 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
             }
         }
 
-        sharedPreferences = getSharedPreferences("location", 0);
-        locationCount2 = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
-        String zoom2 = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
-        if (locationCount2 != 0) { // If locations are already saved
+        sharedPreferences2 = getSharedPreferences("location", 0);
+        locationCount = sharedPreferences2.getInt("locationCount", 0); // Getting number of locations already stored
+        String zoom2 = sharedPreferences2.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
+        if (locationCount != 0) { // If locations are already saved
             String lat = "";
             String lng = "";
-            for (int i = 0; i < locationCount2; i++) { // Iterating through all the locations stored
-                lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
-                lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
+            for (int i = 0; i < locationCount; i++) { // Iterating through all the locations stored
+                lat = sharedPreferences2.getString("lat" + i, "0"); // Getting the latitude of the i-th location
+                lng = sharedPreferences2.getString("lng" + i, "0"); // Getting the longitude of the i-th location
                 drawMarker2(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
                 LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
             }

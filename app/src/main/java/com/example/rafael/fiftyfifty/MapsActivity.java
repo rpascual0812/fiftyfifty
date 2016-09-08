@@ -38,7 +38,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double latitude;
     private double longitude;
     SharedPreferences sharedPreferences;
-    int locationCount = 0;
+    SharedPreferences sharedPreferences2;
+    int locationCount = 0, locationCount2 = 0;
     final Context context = this;
 
     @Override
@@ -148,15 +149,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-        sharedPreferences = getSharedPreferences("passengers", 0);
-        locationCount = sharedPreferences.getInt("locationCount2", 0); // Getting number of locations already stored
-        String zoom2 = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
-        if (locationCount != 0) { // If locations are already saved
+        sharedPreferences2 = getSharedPreferences("passengers", 0);
+        locationCount2 = sharedPreferences2.getInt("locationCount2", 0); // Getting number of locations already stored
+        String zoom2 = sharedPreferences2.getString("zoom2", "0"); // Getting stored zoom level if exists else return 0
+        if (locationCount2 != 0) { // If locations are already saved
             String lat = "";
             String lng = "";
-            for (int i = 0; i < locationCount; i++) { // Iterating through all the locations stored
-                lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
-                lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
+            for (int i = 0; i < locationCount2; i++) { // Iterating through all the locations stored
+                lat = sharedPreferences2.getString("lat" + i, "0"); // Getting the latitude of the i-th location
+                lng = sharedPreferences2.getString("lng" + i, "0"); // Getting the longitude of the i-th location
                 drawMarker2(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
                 LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
             }
