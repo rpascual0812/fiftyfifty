@@ -141,6 +141,20 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
             }
         }
 
+        sharedPreferences = getSharedPreferences("location", 0);
+        locationCount2 = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
+        String zoom2 = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
+        if (locationCount2 != 0) { // If locations are already saved
+            String lat = "";
+            String lng = "";
+            for (int i = 0; i < locationCount2; i++) { // Iterating through all the locations stored
+                lat = sharedPreferences.getString("lat" + i, "0"); // Getting the latitude of the i-th location
+                lng = sharedPreferences.getString("lng" + i, "0"); // Getting the longitude of the i-th location
+                drawMarker2(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng))); // Drawing marker on the map
+                LatLng pos = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+            }
+        }
+
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
             public View getInfoWindow(Marker arg0) {
@@ -164,7 +178,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
             }
         });
 
-        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        /*mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(PassengerActivity.this);
@@ -187,7 +201,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                 });
                 alertDialog.show();
             }
-        });
+        });*/
     }
 
     private void drawMarker(LatLng point){
@@ -195,6 +209,13 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
         markerOptions.position(point); // Setting latitude and longitude for the marker
         Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.male))); // Adding marker on the Google Map
     }
+
+    private void drawMarker2(LatLng point){
+        MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
+        markerOptions.position(point); // Setting latitude and longitude for the marker
+        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
+    }
+
     @Override
     public View getInfoWindow(Marker marker) {
         return null;
