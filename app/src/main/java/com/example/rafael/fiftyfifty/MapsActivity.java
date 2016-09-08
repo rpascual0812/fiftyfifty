@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
@@ -28,6 +30,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -41,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     SharedPreferences sharedPreferences2;
     int locationCount = 0, locationCount2 = 0;
     final Context context = this;
+    Circle circle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +79,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
             }
             mMap.setMyLocationEnabled(true);
+            circle = mMap.addCircle(new CircleOptions()
+                    .center(current_location)
+                    .radius(100)
+                    .strokeColor(Color.RED)
+                    .fillColor(Color.BLUE)
+                    .visible(false));
             mMap.animateCamera(CameraUpdateFactory.zoomIn()); // Zoom in, animating the camera.
             mMap.animateCamera(CameraUpdateFactory.zoomTo(50), 2000, null);  // Zoom out to zoom level 10, animating with a duration of 2 seconds.
             CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
@@ -222,7 +233,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void drawMarker2(LatLng point){
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
-        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.male))); // Adding marker on the Google Map
+        Marker marker2 = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.male)).visible(false)); // Adding marker on the Google Map
+        float[] distance = new float[2];
+        Location.distanceBetween( marker2.getPosition().latitude, marker2.getPosition().longitude, circle.getCenter().latitude, circle.getCenter().longitude, distance);
+        if( distance[0] < circle.getRadius()){
+            marker2.setVisible(true);
+        }else {
+        }
     }
 
     @Override
