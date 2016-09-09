@@ -190,7 +190,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
             }
         });
 
-        /*mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(PassengerActivity.this);
@@ -213,7 +213,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                 });
                 alertDialog.show();
             }
-        });*/
+        });
     }
 
     private void drawMarker(LatLng point){
