@@ -7,4 +7,9 @@
     <string name="longitude">longitude</string>
     <string name="hello">HELLO</string>
     <string name="choose_your_status">Choose your Status</string>
+    <string name="driver_s_destination">DRIVER\'S DESTINATION</string>
+    <string name="from">FROM :</string>
+    <string name="location">LOCATION</string>
+    <string name="to">TO :</string>
+    <string name="set_up">SET UP</string>
 </resources>

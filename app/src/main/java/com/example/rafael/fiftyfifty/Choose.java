@@ -21,7 +21,7 @@ public class Choose extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 driver.setImageResource(R.drawable.wheel2);
-                Intent intent = new Intent(getApplicationContext(),MapsActivity.class);
+                Intent intent = new Intent(getApplicationContext(),DestinationPath.class);
                 startActivity(intent);
             }
         });
