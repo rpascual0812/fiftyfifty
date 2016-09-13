@@ -88,23 +88,6 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
                     .build();                   // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-        searchLocation = (EditText) findViewById(R.id.Search2);
-        searchLocation.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                LatLng current_location = new LatLng(latitude, longitude);
-                mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
-            }
-        });
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override

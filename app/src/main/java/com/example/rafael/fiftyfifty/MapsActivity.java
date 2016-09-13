@@ -19,11 +19,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -53,14 +50,13 @@ import java.util.List;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.InfoWindowAdapter {
 
     private GoogleMap mMap;
-    private double latitude;
-    private double longitude;
-    SharedPreferences sharedPreferences;
-    SharedPreferences sharedPreferences2;
+    private double latitude , longitude;
+    SharedPreferences sharedPreferences , sharedPreferences2;
     int locationCount = 0, locationCount2 = 0;
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
+    Double lat, Long;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +65,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
         markerPoints = new ArrayList<LatLng>(); // Initializing
+        Bundle b = getIntent().getExtras();
+        lat = b.getDouble("lat");
+        Long = b.getDouble("long");
     }
     /**
      * Manipulates the map once available.
@@ -82,19 +81,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        EditText searchLocation;
         mMap.setBuildingsEnabled(false);
         GPSTracker gps = new GPSTracker(this);
+        LatLng fromMark = new LatLng(lat,Long);
+        mMap.addMarker(new MarkerOptions().position(fromMark).title("Starting Destination").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
             LatLng current_location = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+            //mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
-            mMap.setMyLocationEnabled(false);
+            mMap.setMyLocationEnabled(true);
             circle = mMap.addCircle(new CircleOptions()
                     .center(current_location)
                     .radius(100)
@@ -111,25 +111,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .build();                   // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-        searchLocation = (EditText) findViewById(R.id.Search);
-        searchLocation.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                LatLng current_location = new LatLng(latitude, longitude);
-                mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
-            }
-        });
-
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        /*mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(final LatLng latLng) {
                 AlertDialog.Builder alertdialog = new AlertDialog.Builder(MapsActivity.this);
@@ -161,7 +143,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
                 alertdialog.show();
             }
-        });
+        });*/
         sharedPreferences = getSharedPreferences("location", 0);
         locationCount = sharedPreferences.getInt("locationCount", 0); // Getting number of locations already stored
         String zoom = sharedPreferences.getString("zoom", "0"); // Getting stored zoom level if exists else return 0
@@ -191,7 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         // Checks, whether start and end locations are captured
-        if(markerPoints.size() >= 2){
+        if(markerPoints.size() >= 1){
             LatLng origin = markerPoints.get(0);
             LatLng dest = markerPoints.get(1);
             String url = getDirectionsUrl(origin, dest); // Getting URL to the Google Directions API
@@ -247,7 +229,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
-
 
     private void drawMarker(LatLng point){
         // Already 10 locations with 8 waypoints and 1 start location and 1 end location.
