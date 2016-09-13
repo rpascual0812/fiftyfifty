@@ -1,15 +1,13 @@
 <resources>
     <string name="app_name">FiftyFifty</string>
     <string name="title_activity_maps">Map</string>
-    <string name="search">Search</string>
+    <string name="search">Enter your destination</string>
     <string name="message">Message</string>
     <string name="latitude">latitude</string>
     <string name="longitude">longitude</string>
     <string name="hello">HELLO</string>
     <string name="choose_your_status">Choose your Status</string>
-    <string name="driver_s_destination">DRIVER\'S DESTINATION</string>
-    <string name="from">FROM :</string>
+    <string name="menu_settings">Settings</string>
     <string name="location">LOCATION</string>
-    <string name="to">TO :</string>
     <string name="set_up">SET UP</string>
 </resources>

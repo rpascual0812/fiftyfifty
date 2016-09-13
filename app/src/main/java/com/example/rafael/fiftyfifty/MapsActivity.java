@@ -21,6 +21,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -56,7 +57,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
-    Double lat, Long;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +65,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
         markerPoints = new ArrayList<LatLng>(); // Initializing
-        Bundle b = getIntent().getExtras();
-        lat = b.getDouble("lat");
-        Long = b.getDouble("long");
     }
     /**
      * Manipulates the map once available.
@@ -83,13 +80,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setBuildingsEnabled(false);
         GPSTracker gps = new GPSTracker(this);
-        LatLng fromMark = new LatLng(lat,Long);
-        mMap.addMarker(new MarkerOptions().position(fromMark).title("Starting Destination").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
             LatLng current_location = new LatLng(latitude, longitude);
-            //mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+            mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;

@@ -15,7 +15,7 @@
         android:layout_height="fill_parent"
         tools:context="com.example.rafael.fiftyfifty.MapsActivity" />
 
-    <EditText
+    <com.example.rafael.fiftyfifty.CustomAutoCompleteTextView
         android:layout_width="183dp"
         android:layout_height="63dp"
         android:id="@+id/Search"
