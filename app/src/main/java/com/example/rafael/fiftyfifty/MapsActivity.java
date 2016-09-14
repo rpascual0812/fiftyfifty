@@ -19,10 +19,16 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -57,6 +63,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
+    AutoCompleteTextView atvPlaces;
+    DownloadTasker placesDownloadTasker;
+    DownloadTasker placeDetailsDownloadTasker;
+    ParserTasker placesParserTasker;
+    ParserTasker placeDetailsParserTasker;
+    final int PLACES=0;
+    final int PLACES_DETAILS=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +78,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
         markerPoints = new ArrayList<LatLng>(); // Initializing
+        atvPlaces = (AutoCompleteTextView) findViewById(R.id.Search);
+        atvPlaces.setThreshold(1);
+        atvPlaces.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                placesDownloadTasker = new DownloadTasker(PLACES); // Creating a DownloadTask to download Google Places matching "s"
+                String url = getAutoCompleteUrl(s.toString()); // Getting url to the Google Places Autocomplete api
+                placesDownloadTasker.execute(url); // Start downloading Google Place This causes to execute doInBackground() of DownloadTask class
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        // Setting an item click listener for the AutoCompleteTextView dropdown list
+        atvPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
+                ListView lv = (ListView) arg0;
+                SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
+                HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
+                placeDetailsDownloadTasker = new DownloadTasker(PLACES_DETAILS); // Creating a DownloadTask to download Places details of the selected place
+                String url = getPlaceDetailsUrl(hm.get("reference")); // Getting url to the Google Places details api
+                placeDetailsDownloadTasker.execute(url); // Start downloading Google Place Details This causes to execute doInBackground() of DownloadTask class
+            }
+        });
     }
     /**
      * Manipulates the map once available.
@@ -416,4 +460,110 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addPolyline(lineOptions); // Drawing polyline in the Google Map for the i-th route
         }
     }
+
+    private String getAutoCompleteUrl(String place){
+        String key = "key=AIzaSyCfdXATlz7jtM6MEvy9Xh_3_g_Ivc5ysXE";  // Obtain browser key from https://code.google.com/apis/console
+        String input = "input="+place; // place to be be searched
+        String types = "types=geocode"; // place type to be searched
+        String sensor = "sensor=false"; // Sensor enabled
+        String parameters = input+"&"+types+"&"+sensor+"&"+key; // Building the parameters to the web service
+        String output = "json"; // Output format
+        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/"+output+"?"+parameters; // Building the url to the web service
+        return url;
+    }
+
+    private String getPlaceDetailsUrl(String ref){
+        String key = "key=YOUR_API_KEY"; // Obtain browser key from https://code.google.com/apis/console
+        String reference = "reference="+ref; // reference of place
+        String sensor = "sensor=false"; // Sensor enabled
+        String parameters = reference+"&"+sensor+"&"+key; // Building the parameters to the web service
+        String output = "json"; // Output format
+        String url = "https://maps.googleapis.com/maps/api/place/details/"+output+"?"+parameters; // Building the url to the web service
+        return url;
+    }
+
+    // Fetches data from url passed
+    private class DownloadTasker extends AsyncTask<String, Void, String> {
+        private int downloadType = 0;
+        public DownloadTasker(int type) {this.downloadType = type;} // Constructor
+        @Override
+        protected String doInBackground(String... url) {
+            String data = ""; // For storing data from web service
+            try {
+                data = downloadUrl(url[0]); // Fetching the data from web service
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            switch(downloadType){
+                case PLACES:
+                    placesParserTasker = new ParserTasker(PLACES); // Creating ParserTask for parsing Google Places
+                    placesParserTasker.execute(result); // Start parsing google places json data This causes to execute doInBackground() of ParserTask class
+                    break;
+
+                case PLACES_DETAILS :
+                    placeDetailsParserTasker = new ParserTasker(PLACES_DETAILS); // Creating ParserTask for parsing Google Places
+                    placeDetailsParserTasker.execute(result); // Starting Parsing the JSON string This causes to execute doInBackground() of ParserTask class
+            }
+        }
+    }
+
+    /** A class to parse the Google Places in JSON format */
+    private class ParserTasker extends AsyncTask<String, Integer, List<HashMap<String,String>>> {
+        int parserType = 0;
+        public ParserTasker(int type){this.parserType = type;}
+
+        @Override
+        protected List<HashMap<String, String>> doInBackground(String... jsonData) {
+            JSONObject jObject;
+            List<HashMap<String, String>> list = null;
+            try{
+                jObject = new JSONObject(jsonData[0]);
+                switch(parserType){
+                    case PLACES :
+                        PlaceJSONParser placeJsonParser = new PlaceJSONParser();
+                        list = placeJsonParser.parse(jObject); // Getting the parsed data as a List construct
+                        break;
+                    case PLACES_DETAILS :
+                        PlaceDetailJSONParser placeDetailsJsonParser = new PlaceDetailJSONParser();
+                        list = placeDetailsJsonParser.parse(jObject); // Getting the parsed data as a List construct
+                }
+            }catch(Exception e){
+                Log.d("Exception",e.toString());
+            }
+            return list;
+        }
+
+        @Override
+        protected void onPostExecute(List<HashMap<String, String>> result) {
+            switch(parserType){
+                case PLACES :
+                    String[] from = new String[] { "description"};
+                    int[] to = new int[] { android.R.id.text1 };
+                    SimpleAdapter adapter = new SimpleAdapter(getBaseContext(), result, android.R.layout.simple_list_item_1, from, to);// Creating a SimpleAdapter for the AutoCompleteTextView
+                    atvPlaces.setAdapter(adapter); // Setting the adapter
+                    break;
+                case PLACES_DETAILS :
+                    HashMap<String, String> hm = result.get(0);
+                    double latitude = Double.parseDouble(hm.get("lat")); // Getting latitude from the parsed data
+                    double longitude = Double.parseDouble(hm.get("lng")); // Getting longitude from the parsed data
+                    LatLng point = new LatLng(latitude, longitude);
+                    CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(point);
+                    CameraUpdate cameraZoom = CameraUpdateFactory.zoomBy(5);
+                    mMap.moveCamera(cameraPosition);// Showing the user input location in the Google Map
+                    mMap.animateCamera(cameraZoom);
+                    MarkerOptions options = new MarkerOptions();
+                    options.position(point);
+                    options.title("Position");
+                    options.snippet("Latitude:"+latitude+",Longitude:"+longitude);
+                    mMap.addMarker(options); // Adding the marker in the Google Map
+                    break;
+            }
+        }
+    }
+
 }
