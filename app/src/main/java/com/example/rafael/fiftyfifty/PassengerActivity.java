@@ -209,12 +209,12 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
         Marker marker2 = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false)); // Adding marker on the Google Map
-        float[] distance = new float[2];
+        /*float[] distance = new float[2];
         Location.distanceBetween( marker2.getPosition().latitude, marker2.getPosition().longitude, circle.getCenter().latitude, circle.getCenter().longitude, distance);
         if( distance[0] < circle.getRadius()){
             marker2.setVisible(true);
         }else {
-        }
+        }*/
     }
 
     @Override

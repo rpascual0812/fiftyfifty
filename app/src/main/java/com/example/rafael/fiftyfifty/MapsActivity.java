@@ -128,7 +128,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
             LatLng current_location = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+            mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
@@ -279,6 +279,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
         Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
+        mMap.animateCamera(CameraUpdateFactory.zoomIn()); // Zoom in, animating the camera.
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(50), 2000, null);  // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+        CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+                .target(point)      // Sets the center of the map to Mountain View
+                .zoom(17)                   // Sets the zoom
+                .bearing(90)                // Sets the orientation of the camera to east
+                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                .build();                   // Creates a CameraPosition from the builder
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     private void drawMarker2(LatLng point){
@@ -462,7 +471,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private String getAutoCompleteUrl(String place){
-        String key = "key=AIzaSyCfdXATlz7jtM6MEvy9Xh_3_g_Ivc5ysXE";  // Obtain browser key from https://code.google.com/apis/console
+        String key = "key=AIzaSyDnAm9rfFlNauZdySrtQB_1bsrA4el6yRc";  // Obtain browser key from https://code.google.com/apis/console
         String input = "input="+place; // place to be be searched
         String types = "types=geocode"; // place type to be searched
         String sensor = "sensor=false"; // Sensor enabled
@@ -473,7 +482,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private String getPlaceDetailsUrl(String ref){
-        String key = "key=YOUR_API_KEY"; // Obtain browser key from https://code.google.com/apis/console
+        String key = "key=AIzaSyDnAm9rfFlNauZdySrtQB_1bsrA4el6yRc"; // Obtain browser key from https://code.google.com/apis/console
         String reference = "reference="+ref; // reference of place
         String sensor = "sensor=false"; // Sensor enabled
         String parameters = reference+"&"+sensor+"&"+key; // Building the parameters to the web service
@@ -552,7 +561,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     double latitude = Double.parseDouble(hm.get("lat")); // Getting latitude from the parsed data
                     double longitude = Double.parseDouble(hm.get("lng")); // Getting longitude from the parsed data
                     LatLng point = new LatLng(latitude, longitude);
-                    CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(point);
+                    drawMarker(point);
+                    /*CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(point);
                     CameraUpdate cameraZoom = CameraUpdateFactory.zoomBy(5);
                     mMap.moveCamera(cameraPosition);// Showing the user input location in the Google Map
                     mMap.animateCamera(cameraZoom);
@@ -560,7 +570,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     options.position(point);
                     options.title("Position");
                     options.snippet("Latitude:"+latitude+",Longitude:"+longitude);
-                    mMap.addMarker(options); // Adding the marker in the Google Map
+                    mMap.addMarker(options); // Adding the marker in the Google Map*/
                     break;
             }
         }
