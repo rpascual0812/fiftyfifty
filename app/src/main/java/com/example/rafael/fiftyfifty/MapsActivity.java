@@ -22,7 +22,11 @@ import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
@@ -63,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
-    AutoCompleteTextView atvPlaces;
+    AutoCompleteTextView atvPlaces,fromPlaces,toPlaces;
     DownloadTasker placesDownloadTasker;
     DownloadTasker placeDetailsDownloadTasker;
     ParserTasker placesParserTasker;
@@ -274,9 +278,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alertdialog.setPositiveButton("Next", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                AlertDialog.Builder alertdialog = new AlertDialog.Builder(MapsActivity.this);
-                alertdialog.setTitle("Setting up your own Destination");
-                alertdialog.show();
+                alertshow();
             }
         });
         alertdialog.show();
@@ -589,4 +591,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    private void alertshow(){
+        /*LayoutInflater inflater = getLayoutInflater();
+        View dialoglayout = inflater.inflate(R.layout.destination,null);*/
+        Dialog alertdialog = new Dialog(this, R.style.AppTheme_NoActionBar);
+        alertdialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        alertdialog.setContentView(R.layout.destination);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(alertdialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.gravity = Gravity.CENTER;
+        alertdialog.getWindow().setAttributes(lp);
+        fromPlaces = (AutoCompleteTextView) alertdialog.findViewById(R.id.editfrom);
+        fromPlaces.setThreshold(1);
+        fromPlaces.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                placesDownloadTasker = new DownloadTasker(PLACES); // Creating a DownloadTask to download Google Places matching "s"
+                String url = getAutoCompleteUrl(s.toString()); // Getting url to the Google Places Autocomplete api
+                placesDownloadTasker.execute(url); // Start downloading Google Place This causes to execute doInBackground() of DownloadTask class
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        fromPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
+                ListView lv = (ListView) arg0;
+                SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
+                HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
+                placeDetailsDownloadTasker = new DownloadTasker(PLACES_DETAILS); // Creating a DownloadTask to download Places details of the selected place
+                String url = getPlaceDetailsUrl(hm.get("reference")); // Getting url to the Google Places details api
+                //placeDetailsDownloadTasker.execute(url); // Start downloading Google Place Details This causes to execute doInBackground() of DownloadTask class
+            }
+        });
+        alertdialog.show();
+    }
 }
