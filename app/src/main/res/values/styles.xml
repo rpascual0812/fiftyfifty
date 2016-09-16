@@ -7,4 +7,59 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="AppTheme.transparent" parent="Theme.AppCompat.Light">
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="colorPrimary">@android:color/transparent</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        >
+    </style>
+    <style name="AppBaseTheme" parent="android:Theme.Holo.Light"/>
+    <style name="AppTheme.base" parent="AppBaseTheme">
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:actionBarStyle">@style/Widget.ActionBar</item>
+        <item name="android:actionMenuTextColor">#fff</item>
+    </style>
+
+
+    <style name="Widget.ActionBar" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.ActionBar.Transparent">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="MyEditTextTheme">
+        <!-- Used for the bottom line when not selected / focused -->
+        <item name="colorControlNormal">#9e9e9e</item>
+        <!-- colorControlActivated & colorControlHighlight use the colorAccent color by default -->
+    </style>
+
+    <!--USED FOR ALERT DIALOG-->
+    <style name="default_activity_theme" parent="@android:style/Theme.Holo"/>
+
+    <style name="normalText" parent="@android:style/TextAppearance">
+        <item name="android:textSize">19sp</item>
+        <item name="android:typeface">sans</item>
+        <item name="android:textColor">#F000</item>
+    </style>
+
+    <style name="blinkText" parent="normalText">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#FF0000</item>
+    </style>
 </resources>

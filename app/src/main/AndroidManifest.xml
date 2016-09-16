@@ -40,7 +40,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-        <activity android:name=".Title">
+        <activity android:name=".Title"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -59,7 +60,8 @@
             android:name=".LocationsContentProvider"
             android:authorities="com.example.rafael.fiftyfifty"
             android:exported="false" />
-        <activity android:name=".Choose">
+        <activity android:name=".Choose"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

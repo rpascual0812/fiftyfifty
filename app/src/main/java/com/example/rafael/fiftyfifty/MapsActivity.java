@@ -128,7 +128,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
             LatLng current_location = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false));
+            //mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
@@ -267,6 +267,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 alertDialog.show();
             }
         });
+
+        AlertDialog.Builder alertdialog = new AlertDialog.Builder(this);
+        alertdialog.setTitle("Welcome to Carpool App");
+        alertdialog.setMessage("This application is kemerut!");
+        alertdialog.setPositiveButton("Next", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                AlertDialog.Builder alertdialog = new AlertDialog.Builder(MapsActivity.this);
+                alertdialog.setTitle("Setting up your own Destination");
+                alertdialog.show();
+            }
+        });
+        alertdialog.show();
     }
 
     private void drawMarker(LatLng point){
@@ -558,8 +571,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     break;
                 case PLACES_DETAILS :
                     HashMap<String, String> hm = result.get(0);
-                    double latitude = Double.parseDouble(hm.get("lat")); // Getting latitude from the parsed data
-                    double longitude = Double.parseDouble(hm.get("lng")); // Getting longitude from the parsed data
+                    latitude = Double.parseDouble(hm.get("lat")); // Getting latitude from the parsed data
+                    longitude = Double.parseDouble(hm.get("lng")); // Getting longitude from the parsed data
                     LatLng point = new LatLng(latitude, longitude);
                     drawMarker(point);
                     /*CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(point);
