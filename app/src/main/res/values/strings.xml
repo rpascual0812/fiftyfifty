@@ -10,4 +10,8 @@
     <string name="menu_settings">Settings</string>
     <string name="location">LOCATION</string>
     <string name="set_up">SET UP</string>
+    <string name="setting_up_your_destination">Setting up your destination</string>
+    <string name="you_can_route_your_destination_to_and_from">You can route your destination to and from</string>
+    <string name="from">FROM:</string>
+    <string name="to">TO:</string>
 </resources>

@@ -76,7 +76,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
-    AutoCompleteTextView atvPlaces,fromPlaces;
+    AutoCompleteTextView atvPlaces,fromPlaces, toPlaces;
     DownloadTasker placesDownloadTasker;
     DownloadTasker placeDetailsDownloadTasker;
     ParserTasker placesParserTasker;
@@ -641,6 +641,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mPlaceArrayAdapter = new PlaceArrayAdapter(this, android.R.layout.simple_list_item_1, BOUNDS_MOUNTAIN_VIEW, null);
         fromPlaces.setOnItemClickListener(mAutocompleteClickListener);
         fromPlaces.setAdapter(mPlaceArrayAdapter);
+        toPlaces = (AutoCompleteTextView) alertdialog.findViewById(R.id.editto);
+        toPlaces.setThreshold(3);
+        toPlaces.setOnItemClickListener(AutocompleteClickListener);
+        toPlaces.setAdapter(mPlaceArrayAdapter);
         alertdialog.show();
     }
 
@@ -665,12 +669,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             final Place place = places.get(0); // Selecting the first object buffer.
             CharSequence attributions = places.getAttributions();
-            /*mNameTextView.setText(Html.fromHtml(place.getName() + ""));
-            mAddressTextView.setText(Html.fromHtml(place.getAddress() + ""));
-            mIdTextView.setText(Html.fromHtml(place.getId() + ""));
-            mPhoneTextView.setText(Html.fromHtml(place.getPhoneNumber() + ""));
-            mWebTextView.setText(place.getWebsiteUri() + "");
-            if (attributions != null) {mAttTextView.setText(Html.fromHtml(attributions.toString()));}*/
+        }
+    };
+
+    private AdapterView.OnItemClickListener AutocompleteClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
+            final String placeId = String.valueOf(item.placeId);
+            Log.i(LOG_TAG, "Selected: " + item.description);
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
+            placeResult.setResultCallback(UpdatePlaceDetailsCallback);
+            Log.i(LOG_TAG, "Fetching details for ID: " + item.placeId);
+        }
+    };
+
+    private ResultCallback<PlaceBuffer> UpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(PlaceBuffer places) {
+            if (!places.getStatus().isSuccess()) {
+                Log.e(LOG_TAG, "Place query did not complete. Error: " + places.getStatus().toString());
+                return;
+            }
+            final Place place = places.get(0); // Selecting the first object buffer.
+            CharSequence attributions = places.getAttributions();
         }
     };
 }
