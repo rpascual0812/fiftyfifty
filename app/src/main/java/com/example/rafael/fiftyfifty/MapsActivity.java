@@ -30,6 +30,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -88,6 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
     private static final String LOG_TAG = "MainActivity";
     private static final int GOOGLE_API_CLIENT_ID = 0;
+    Button Continue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -626,7 +628,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void alertshow(){
         /*LayoutInflater inflater = getLayoutInflater();
         View dialoglayout = inflater.inflate(R.layout.destination,null);*/
-        Dialog alertdialog = new Dialog(this, R.style.AppTheme_NoActionBar);
+        final Dialog alertdialog = new Dialog(this, R.style.AppTheme_NoActionBar);
         alertdialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         alertdialog.setContentView(R.layout.destination);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
@@ -645,6 +647,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         toPlaces.setThreshold(3);
         toPlaces.setOnItemClickListener(AutocompleteClickListener);
         toPlaces.setAdapter(mPlaceArrayAdapter);
+        Continue = (Button) alertdialog.findViewById(R.id.btnMap);
+        Continue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertdialog.cancel();
+            }
+        });
         alertdialog.show();
     }
 

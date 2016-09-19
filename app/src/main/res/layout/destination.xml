@@ -22,9 +22,12 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_below="@+id/title"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="51dp" />
+        android:layout_marginTop="51dp"
+        android:gravity="center"
+        android:layout_alignRight="@+id/title"
+        android:layout_alignEnd="@+id/title"
+        android:layout_alignLeft="@+id/textfrom"
+        android:layout_alignStart="@+id/textfrom" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,11 +35,11 @@
         android:text="@string/from"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_below="@+id/description"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="51dp"
-        android:id="@+id/textfrom" />
+        android:id="@+id/textfrom"
+        android:layout_marginBottom="41dp"
+        android:layout_above="@+id/textto"
+        android:layout_alignLeft="@+id/textto"
+        android:layout_alignStart="@+id/textto" />
 
     <AutoCompleteTextView
         android:layout_width="wrap_content"
@@ -56,8 +59,8 @@
         android:textStyle="bold"
         android:id="@+id/textto"
         android:layout_centerVertical="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignLeft="@+id/title"
+        android:layout_alignStart="@+id/title" />
 
     <AutoCompleteTextView
         android:layout_width="wrap_content"
@@ -65,8 +68,27 @@
         android:id="@+id/editto"
         android:layout_alignTop="@+id/textto"
         android:layout_toRightOf="@+id/textto"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:hint="@string/location" />
+        android:hint="@string/location"
+        android:layout_alignRight="@+id/editfrom"
+        android:layout_alignEnd="@+id/editfrom" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save Route"
+        android:id="@+id/btnRoute"
+        android:layout_marginTop="38dp"
+        android:layout_below="@+id/editto"
+        android:layout_alignLeft="@+id/textto"
+        android:layout_alignStart="@+id/textto" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go to Map"
+        android:id="@+id/btnMap"
+        android:layout_alignTop="@+id/btnRoute"
+        android:layout_alignRight="@+id/editfrom"
+        android:layout_alignEnd="@+id/editfrom" />
 
 </RelativeLayout>
