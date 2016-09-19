@@ -12,6 +12,8 @@ import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -23,7 +25,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,8 +32,15 @@ import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -42,6 +50,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -58,7 +67,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.InfoWindowAdapter {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.InfoWindowAdapter, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private GoogleMap mMap;
     private double latitude , longitude;
@@ -67,13 +76,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
-    AutoCompleteTextView atvPlaces,fromPlaces,toPlaces;
+    AutoCompleteTextView atvPlaces,fromPlaces;
     DownloadTasker placesDownloadTasker;
     DownloadTasker placeDetailsDownloadTasker;
     ParserTasker placesParserTasker;
     ParserTasker placeDetailsParserTasker;
     final int PLACES=0;
     final int PLACES_DETAILS=1;
+    private GoogleApiClient mGoogleApiClient;
+    private PlaceArrayAdapter mPlaceArrayAdapter;
+    private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
+    private static final String LOG_TAG = "MainActivity";
+    private static final int GOOGLE_API_CLIENT_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -325,6 +339,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public View getInfoContents(Marker marker) {
         return null;
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        mPlaceArrayAdapter.setGoogleApiClient(mGoogleApiClient);
+        Log.i(LOG_TAG, "Google Places API connected.");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mPlaceArrayAdapter.setGoogleApiClient(null);
+        Log.e(LOG_TAG, "Google Places API connection suspended.");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e(LOG_TAG, "Google Places API connection failed with error code: " + connectionResult.getErrorCode());
+        Toast.makeText(this, "Google Places API connection failed with error code:" + connectionResult.getErrorCode(), Toast.LENGTH_LONG).show();
     }
 
     private class LocationInsertTask extends AsyncTask<ContentValues, Void, Void> {
@@ -603,36 +635,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         lp.gravity = Gravity.CENTER;
         alertdialog.getWindow().setAttributes(lp);
+        mGoogleApiClient = new GoogleApiClient.Builder(MapsActivity.this).addApi(Places.GEO_DATA_API).enableAutoManage(this, GOOGLE_API_CLIENT_ID, this).addConnectionCallbacks(this).build();
         fromPlaces = (AutoCompleteTextView) alertdialog.findViewById(R.id.editfrom);
-        fromPlaces.setThreshold(1);
-        fromPlaces.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                placesDownloadTasker = new DownloadTasker(PLACES); // Creating a DownloadTask to download Google Places matching "s"
-                String url = getAutoCompleteUrl(s.toString()); // Getting url to the Google Places Autocomplete api
-                placesDownloadTasker.execute(url); // Start downloading Google Place This causes to execute doInBackground() of DownloadTask class
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-
-        fromPlaces.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
-                ListView lv = (ListView) arg0;
-                SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
-                HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
-                placeDetailsDownloadTasker = new DownloadTasker(PLACES_DETAILS); // Creating a DownloadTask to download Places details of the selected place
-                String url = getPlaceDetailsUrl(hm.get("reference")); // Getting url to the Google Places details api
-                //placeDetailsDownloadTasker.execute(url); // Start downloading Google Place Details This causes to execute doInBackground() of DownloadTask class
-            }
-        });
+        fromPlaces.setThreshold(3);
+        mPlaceArrayAdapter = new PlaceArrayAdapter(this, android.R.layout.simple_list_item_1, BOUNDS_MOUNTAIN_VIEW, null);
+        fromPlaces.setOnItemClickListener(mAutocompleteClickListener);
+        fromPlaces.setAdapter(mPlaceArrayAdapter);
         alertdialog.show();
     }
+
+    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
+            final String placeId = String.valueOf(item.placeId);
+            Log.i(LOG_TAG, "Selected: " + item.description);
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
+            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            Log.i(LOG_TAG, "Fetching details for ID: " + item.placeId);
+        }
+    };
+
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(PlaceBuffer places) {
+            if (!places.getStatus().isSuccess()) {
+                Log.e(LOG_TAG, "Place query did not complete. Error: " + places.getStatus().toString());
+                return;
+            }
+            final Place place = places.get(0); // Selecting the first object buffer.
+            CharSequence attributions = places.getAttributions();
+            /*mNameTextView.setText(Html.fromHtml(place.getName() + ""));
+            mAddressTextView.setText(Html.fromHtml(place.getAddress() + ""));
+            mIdTextView.setText(Html.fromHtml(place.getId() + ""));
+            mPhoneTextView.setText(Html.fromHtml(place.getPhoneNumber() + ""));
+            mWebTextView.setText(place.getWebsiteUri() + "");
+            if (attributions != null) {mAttTextView.setText(Html.fromHtml(attributions.toString()));}*/
+        }
+    };
 }

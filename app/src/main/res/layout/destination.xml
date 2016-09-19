@@ -38,7 +38,7 @@
         android:layout_marginTop="51dp"
         android:id="@+id/textfrom" />
 
-    <com.example.rafael.fiftyfifty.CustomAutoCompleteTextView
+    <AutoCompleteTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editfrom"
@@ -60,7 +60,7 @@
         android:layout_alignParentStart="true"
         android:layout_marginTop="112dp" />
 
-    <com.example.rafael.fiftyfifty.CustomAutoCompleteTextView
+    <AutoCompleteTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editto"
