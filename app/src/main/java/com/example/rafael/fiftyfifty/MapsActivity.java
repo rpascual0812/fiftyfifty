@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -33,6 +34,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -68,7 +70,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.InfoWindowAdapter, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LoaderManager.LoaderCallbacks<Cursor>, GoogleMap.InfoWindowAdapter {
 
     private GoogleMap mMap;
     private double latitude , longitude;
@@ -84,12 +86,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ParserTasker placeDetailsParserTasker;
     final int PLACES=0;
     final int PLACES_DETAILS=1;
-    private GoogleApiClient mGoogleApiClient;
-    private PlaceArrayAdapter mPlaceArrayAdapter;
-    private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
-    private static final String LOG_TAG = "MainActivity";
-    private static final int GOOGLE_API_CLIENT_ID = 0;
-    Button Continue;
+    int IntentCount = 0;
+    Button Edit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +95,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
+        Edit = (Button) findViewById(R.id.btnEdit);
         markerPoints = new ArrayList<LatLng>(); // Initializing
         atvPlaces = (AutoCompleteTextView) findViewById(R.id.Search);
         atvPlaces.setThreshold(1);
@@ -287,17 +286,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 alertDialog.show();
             }
         });
+        Intent mintent = getIntent();
+        IntentCount = mintent.getIntExtra("Count" , 0);
+        if (IntentCount == 0){
+            AlertDialog.Builder alertdialog = new AlertDialog.Builder(this);
+            alertdialog.setTitle("Welcome to Carpool App");
+            alertdialog.setMessage("This application is kemerut!");
+            alertdialog.setPositiveButton("Next", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                    startActivity(intent);
+                }
+            });
+            alertdialog.show();
+        }
 
-        AlertDialog.Builder alertdialog = new AlertDialog.Builder(this);
-        alertdialog.setTitle("Welcome to Carpool App");
-        alertdialog.setMessage("This application is kemerut!");
-        alertdialog.setPositiveButton("Next", new DialogInterface.OnClickListener() {
+        Edit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                alertshow();
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                startActivity(intent);
             }
         });
-        alertdialog.show();
     }
 
     private void drawMarker(LatLng point){
@@ -341,24 +352,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public View getInfoContents(Marker marker) {
         return null;
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        mPlaceArrayAdapter.setGoogleApiClient(mGoogleApiClient);
-        Log.i(LOG_TAG, "Google Places API connected.");
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        mPlaceArrayAdapter.setGoogleApiClient(null);
-        Log.e(LOG_TAG, "Google Places API connection suspended.");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.e(LOG_TAG, "Google Places API connection failed with error code: " + connectionResult.getErrorCode());
-        Toast.makeText(this, "Google Places API connection failed with error code:" + connectionResult.getErrorCode(), Toast.LENGTH_LONG).show();
     }
 
     private class LocationInsertTask extends AsyncTask<ContentValues, Void, Void> {
@@ -624,84 +617,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     }
-
-    private void alertshow(){
-        /*LayoutInflater inflater = getLayoutInflater();
-        View dialoglayout = inflater.inflate(R.layout.destination,null);*/
-        final Dialog alertdialog = new Dialog(this, R.style.AppTheme_NoActionBar);
-        alertdialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        alertdialog.setContentView(R.layout.destination);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(alertdialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.gravity = Gravity.CENTER;
-        alertdialog.getWindow().setAttributes(lp);
-        mGoogleApiClient = new GoogleApiClient.Builder(MapsActivity.this).addApi(Places.GEO_DATA_API).enableAutoManage(this, GOOGLE_API_CLIENT_ID, this).addConnectionCallbacks(this).build();
-        fromPlaces = (AutoCompleteTextView) alertdialog.findViewById(R.id.editfrom);
-        fromPlaces.setThreshold(3);
-        mPlaceArrayAdapter = new PlaceArrayAdapter(this, android.R.layout.simple_list_item_1, BOUNDS_MOUNTAIN_VIEW, null);
-        fromPlaces.setOnItemClickListener(mAutocompleteClickListener);
-        fromPlaces.setAdapter(mPlaceArrayAdapter);
-        toPlaces = (AutoCompleteTextView) alertdialog.findViewById(R.id.editto);
-        toPlaces.setThreshold(3);
-        toPlaces.setOnItemClickListener(AutocompleteClickListener);
-        toPlaces.setAdapter(mPlaceArrayAdapter);
-        Continue = (Button) alertdialog.findViewById(R.id.btnMap);
-        Continue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                alertdialog.cancel();
-            }
-        });
-        alertdialog.show();
-    }
-
-    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
-            final String placeId = String.valueOf(item.placeId);
-            Log.i(LOG_TAG, "Selected: " + item.description);
-            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
-            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
-            Log.i(LOG_TAG, "Fetching details for ID: " + item.placeId);
-        }
-    };
-
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
-        @Override
-        public void onResult(PlaceBuffer places) {
-            if (!places.getStatus().isSuccess()) {
-                Log.e(LOG_TAG, "Place query did not complete. Error: " + places.getStatus().toString());
-                return;
-            }
-            final Place place = places.get(0); // Selecting the first object buffer.
-            CharSequence attributions = places.getAttributions();
-        }
-    };
-
-    private AdapterView.OnItemClickListener AutocompleteClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
-            final String placeId = String.valueOf(item.placeId);
-            Log.i(LOG_TAG, "Selected: " + item.description);
-            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId);
-            placeResult.setResultCallback(UpdatePlaceDetailsCallback);
-            Log.i(LOG_TAG, "Fetching details for ID: " + item.placeId);
-        }
-    };
-
-    private ResultCallback<PlaceBuffer> UpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
-        @Override
-        public void onResult(PlaceBuffer places) {
-            if (!places.getStatus().isSuccess()) {
-                Log.e(LOG_TAG, "Place query did not complete. Error: " + places.getStatus().toString());
-                return;
-            }
-            final Place place = places.get(0); // Selecting the first object buffer.
-            CharSequence attributions = places.getAttributions();
-        }
-    };
 }
