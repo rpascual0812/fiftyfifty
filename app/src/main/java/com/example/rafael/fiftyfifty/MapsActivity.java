@@ -87,7 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final int PLACES=0;
     final int PLACES_DETAILS=1;
     int IntentCount = 0;
-    Button Edit;
+    Double lat, Long;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +95,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
-        Edit = (Button) findViewById(R.id.btnEdit);
         markerPoints = new ArrayList<LatLng>(); // Initializing
         atvPlaces = (AutoCompleteTextView) findViewById(R.id.Search);
         atvPlaces.setThreshold(1);
@@ -146,6 +145,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (gps.canGetLocation()) {
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
+            lat = latitude;
+            Long = longitude;
             LatLng current_location = new LatLng(latitude, longitude);
             //mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
@@ -296,19 +297,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                    intent.putExtra("latitude", lat);
+                    intent.putExtra("longitude", Long);
                     startActivity(intent);
                 }
             });
             alertdialog.show();
         }
-
-        Edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
     private void drawMarker(LatLng point){
