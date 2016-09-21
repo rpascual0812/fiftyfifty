@@ -87,12 +87,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final int PLACES=0;
     final int PLACES_DETAILS=1;
     int IntentCount = 0;
-    Double lat, Long;
+    Double lat, Long, lat1, long1;
+    TextView latitude2, longitude2;
+    String latitude1, longitude1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        latitude2 = (TextView) findViewById(R.id.lat);
+        longitude2 = (TextView)findViewById(R.id.Long1);
+        Intent iintent = getIntent();
+        latitude1 = iintent.getStringExtra("latitude");
+        longitude1 = iintent.getStringExtra("longitude");
+        latitude2.setText(latitude1);
+        longitude2.setText(longitude1);
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
         markerPoints = new ArrayList<LatLng>(); // Initializing
@@ -303,6 +312,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             });
             alertdialog.show();
+        }
+
+        try{
+            String latitudefrom = latitude2.getText().toString();
+            String longitudeto = longitude2.getText().toString();
+            lat1 = Double.valueOf(latitudefrom.trim()).doubleValue();
+            long1 = Double.valueOf(longitudeto.trim()).doubleValue();
+            LatLng latLng = new LatLng(lat1,long1);
+            drawMarker(latLng);
+        }catch (NumberFormatException e){
+            e.getStackTrace();
         }
     }
 

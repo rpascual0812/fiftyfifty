@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -42,22 +44,23 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
     private GoogleApiClient mGoogleApiClient;
     private PlaceArrayAdapter mPlaceArrayAdapter;
     private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
-    Button goMap;
-    private TextView mAddressTextView;
+    Button goMap, saveRoute;
+    private TextView mAddressTextView, latLongTV, LongTV;
     Double latitude, Longitude;
+    private String latitud, longitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.destination);
+        latLongTV = (TextView) findViewById(R.id.latLongTV);
+        LongTV = (TextView) findViewById(R.id.LongTV);
         mGoogleApiClient = new GoogleApiClient.Builder(RouteActivity.this).addApi(Places.GEO_DATA_API).enableAutoManage(this, GOOGLE_API_CLIENT_ID, this).addConnectionCallbacks(this).build();
         mAddressTextView = (TextView) findViewById(R.id.address);
         goingfrom = (AutoCompleteTextView) findViewById(R.id.editfrom);
-        Intent nintent = getIntent();
+        final Intent nintent = getIntent();
         latitude = nintent.getDoubleExtra("latitude", 0);
         Longitude = nintent.getDoubleExtra("longitude", 0);
-        /*String lat = Double.toString(latitude);
-        String Long = Double.toString(Longitude);*/
         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
         List<Address> addresses  = null;
         try {
@@ -67,7 +70,6 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
         }
         String city = addresses.get(0).getLocality();
         String state = addresses.get(0).getAdminArea();
-        //String zip = addresses.get(0).getPostalCode();
         String country = addresses.get(0).getCountryName();
         goingfrom.setText(city+","+state+","+country);
         goingto = (AutoCompleteTextView) findViewById(R.id.editto);
@@ -76,6 +78,17 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
         mPlaceArrayAdapter = new PlaceArrayAdapter(this, android.R.layout.simple_list_item_1, BOUNDS_MOUNTAIN_VIEW, null);
         goingfrom.setAdapter(mPlaceArrayAdapter);
         goingto.setAdapter(mPlaceArrayAdapter);
+        saveRoute = (Button) findViewById(R.id.btnRoute);
+        saveRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                intent.putExtra("latitude", latitud);
+                intent.putExtra("longitude", longitud);
+                intent.putExtra("Count", 1);
+                startActivity(intent);
+            }
+        });
         goMap = (Button) findViewById(R.id.btnMap);
         goMap.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,6 +121,10 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
             }
             final Place place = places.get(0); // Selecting the first object buffer.
             CharSequence attributions = places.getAttributions();
+            mAddressTextView.setText(Html.fromHtml(place.getAddress() + ""));
+            String address = mAddressTextView.getText().toString();
+            GeocodingLocation locationAddress = new GeocodingLocation();
+            locationAddress.getAddressFromLocation(address, getApplicationContext(), new GeocoderHandler());
         }
     };
 
@@ -128,5 +145,27 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
         Log.e(LOG_TAG, "Google Places API connection failed with error code: " + connectionResult.getErrorCode());
 
         Toast.makeText(this, "Google Places API connection failed with error code:" + connectionResult.getErrorCode(), Toast.LENGTH_LONG).show();
+    }
+
+    private class GeocoderHandler extends Handler {
+        @Override
+        public void handleMessage(Message message) {
+            String locationAddress;
+            String locationAddress1;
+            switch (message.what) {
+                case 1:
+                    Bundle bundle = message.getData();
+                    locationAddress = bundle.getString("address");
+                    locationAddress1 = bundle.getString("address1");
+                    break;
+                default:
+                    locationAddress = null;
+                    locationAddress1 = null;
+            }
+            latLongTV.setText(locationAddress);
+            LongTV.setText(locationAddress1);
+            latitud = latLongTV.getText().toString();
+            longitud = LongTV.getText().toString();
+        }
     }
 }

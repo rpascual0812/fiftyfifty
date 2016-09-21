@@ -22,4 +22,21 @@
         android:inputType="text"
         android:hint="@string/search"
         android:layout_gravity="center_horizontal|top" />
+
+    <RadioGroup
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_gravity="bottom"
+        android:visibility="invisible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/lat"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/Long1" />
+    </RadioGroup>
 </FrameLayout>

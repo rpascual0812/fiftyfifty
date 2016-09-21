@@ -100,4 +100,23 @@
         android:layout_below="@+id/btnRoute"
         android:visibility="invisible"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/latLongTV"
+        android:layout_below="@+id/address"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/LongTV"
+        android:layout_centerVertical="true"
+        android:layout_below="@+id/latLongTV"
+        android:visibility="invisible"/>
+
 </RelativeLayout>
