@@ -8,13 +8,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,8 +29,16 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +49,7 @@ import static com.example.rafael.fiftyfifty.R.string.longitude;
 /**
  * Created by pogi on 9/20/2016.
  */
-public class RouteActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
+public class RouteActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, OnMapReadyCallback{
     private static final String LOG_TAG = "MainActivity";
     private static final int GOOGLE_API_CLIENT_ID = 0;
     private AutoCompleteTextView goingfrom, goingto;
@@ -46,13 +58,21 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
     private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
     Button goMap, saveRoute;
     private TextView mAddressTextView, latLongTV, LongTV;
-    Double latitude, Longitude;
+    Double latitude, Longitude, latt, longg;
     private String latitud, longitud;
+    Window window;
+    RelativeLayout relativeLayout, rLayout;
+    GoogleMap mMap;
+    TextView latget, longget;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.destination);
+        latget = (TextView) findViewById(R.id.latti);
+        longget = (TextView) findViewById(R.id.Longgi);
+        relativeLayout = (RelativeLayout) findViewById(R.id.relativealert);
+        rLayout = (RelativeLayout) findViewById(R.id.mapshow);
         latLongTV = (TextView) findViewById(R.id.latLongTV);
         LongTV = (TextView) findViewById(R.id.LongTV);
         mGoogleApiClient = new GoogleApiClient.Builder(RouteActivity.this).addApi(Places.GEO_DATA_API).enableAutoManage(this, GOOGLE_API_CLIENT_ID, this).addConnectionCallbacks(this).build();
@@ -76,7 +96,6 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
         goingto.setThreshold(3);
         goingto.setOnItemClickListener(AutocompleteClickListener);
         mPlaceArrayAdapter = new PlaceArrayAdapter(this, android.R.layout.simple_list_item_1, BOUNDS_MOUNTAIN_VIEW, null);
-        goingfrom.setAdapter(mPlaceArrayAdapter);
         goingto.setAdapter(mPlaceArrayAdapter);
         saveRoute = (Button) findViewById(R.id.btnRoute);
         saveRoute.setOnClickListener(new View.OnClickListener() {
@@ -98,11 +117,15 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
                 startActivity(intent);
             }
         });
+        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map3); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        mapFragment.getMapAsync(this);
     }
 
     private AdapterView.OnItemClickListener AutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            relativeLayout.setVisibility(view.INVISIBLE);
+            rLayout.setVisibility(view.VISIBLE);
             final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
             final String placeId = String.valueOf(item.placeId);
             Log.i(LOG_TAG, "Selected: " + item.description);
@@ -145,6 +168,24 @@ public class RouteActivity extends AppCompatActivity implements GoogleApiClient.
         Log.e(LOG_TAG, "Google Places API connection failed with error code: " + connectionResult.getErrorCode());
 
         Toast.makeText(this, "Google Places API connection failed with error code:" + connectionResult.getErrorCode(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        latget.setText(latitud);
+        longget.setText(longitud);
+        try{
+            String lat1 = latget.getText().toString();
+            String long1 = longget.getText().toString();
+            latt = Double.valueOf(lat1.trim()).doubleValue();
+            longg = Double.valueOf(long1.trim()).doubleValue();
+            LatLng latLng = new LatLng(latt, longg);
+            mMap.addMarker(new MarkerOptions().position(latLng).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        }catch (NumberFormatException e){
+            e.getStackTrace();
+        }
     }
 
     private class GeocoderHandler extends Handler {

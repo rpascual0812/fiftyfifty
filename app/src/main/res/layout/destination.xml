@@ -1,55 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:id="@+id/relativealert">
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="70dp"
+        android:id="@+id/relativealert">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/setting_up_your_destination"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:gravity="center_horizontal"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:visibility="invisible"/>
 
-    <TextView
-        android:id="@+id/description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/you_can_route_your_destination_to_and_from"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_below="@+id/title"
-        android:layout_marginTop="51dp"
-        android:gravity="center"
-        android:layout_alignRight="@+id/title"
-        android:layout_alignEnd="@+id/title"
-        android:layout_alignLeft="@+id/textfrom"
-        android:layout_alignStart="@+id/textfrom" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=""
+            android:id="@+id/latLongTV"
+            android:layout_below="@+id/address"
+            android:visibility="invisible"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/from"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:id="@+id/textfrom"
-        android:layout_marginBottom="41dp"
-        android:layout_above="@+id/textto"
-        android:layout_alignLeft="@+id/textto"
-        android:layout_alignStart="@+id/textto" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=""
+            android:id="@+id/LongTV"
+            android:layout_centerVertical="true"
+            android:layout_below="@+id/latLongTV"
+            android:visibility="invisible"/>
+
+        <AutoCompleteTextView
+            android:layout_width="wrap_content"
+            android:layout_height="65dp"
+            android:id="@+id/editfrom"
+            android:hint="@string/location"
+            android:layout_alignBaseline="@+id/textfrom"
+            android:layout_alignBottom="@+id/textfrom"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@+id/textfrom"
+            android:layout_toEndOf="@+id/textfrom" />
+
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/you_can_route_your_destination_to_and_from"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="74dp"
+            android:layout_below="@+id/editfrom"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/from"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:id="@+id/textfrom"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="51dp" />
+
+
+    </RelativeLayout>
+
 
     <AutoCompleteTextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editfrom"
-        android:layout_alignTop="@+id/textfrom"
-        android:layout_toRightOf="@+id/textfrom"
-        android:layout_alignRight="@+id/description"
-        android:layout_alignEnd="@+id/description"
-        android:hint="@string/location" />
+        android:layout_height="65dp"
+        android:id="@+id/editto"
+        android:hint="@string/location"
+        android:layout_alignBaseline="@+id/textto"
+        android:layout_alignBottom="@+id/textto"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/textto"
+        android:layout_toEndOf="@+id/textto"
+        android:focusableInTouchMode="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -58,65 +95,61 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:id="@+id/textto"
-        android:layout_centerVertical="true"
-        android:layout_alignLeft="@+id/title"
-        android:layout_alignStart="@+id/title" />
+        android:layout_marginTop="24dp"
+        android:layout_alignParentTop="true" />
 
-    <AutoCompleteTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editto"
-        android:layout_alignTop="@+id/textto"
-        android:layout_toRightOf="@+id/textto"
-        android:hint="@string/location"
-        android:layout_alignRight="@+id/editfrom"
-        android:layout_alignEnd="@+id/editfrom" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="70dp"
+        android:id="@+id/mapshow"
+        android:visibility="invisible">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save Route"
-        android:id="@+id/btnRoute"
-        android:layout_marginTop="38dp"
-        android:layout_below="@+id/editto"
-        android:layout_alignLeft="@+id/textto"
-        android:layout_alignStart="@+id/textto" />
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/map3"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            tools:context="com.example.rafael.fiftyfifty.RouteActivity"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Go to Map"
-        android:id="@+id/btnMap"
-        android:layout_alignTop="@+id/btnRoute"
-        android:layout_alignRight="@+id/editfrom"
-        android:layout_alignEnd="@+id/editfrom" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save Route"
+            android:id="@+id/btnRoute"
+            android:layout_marginTop="38dp"
+            android:layout_below="@+id/map3"/>
 
-    <TextView
-        android:id="@+id/address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/btnRoute"
-        android:visibility="invisible"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Go to Map"
+            android:id="@+id/btnMap"
+            android:layout_alignTop="@+id/btnRoute"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text=""
-        android:id="@+id/latLongTV"
-        android:layout_below="@+id/address"
-        android:visibility="invisible"/>
+        <RadioGroup
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:layout_gravity="bottom"
+            android:visibility="invisible">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text=""
-        android:id="@+id/LongTV"
-        android:layout_centerVertical="true"
-        android:layout_below="@+id/latLongTV"
-        android:visibility="invisible"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/latti"
+                android:visibility="invisible"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/Longgi"
+                android:visibility="invisible"/>
+        </RadioGroup>
+
+    </RelativeLayout>
 
 </RelativeLayout>
