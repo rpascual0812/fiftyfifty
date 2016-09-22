@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    tools:context=".RouteActivity">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -70,33 +73,35 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginTop="51dp" />
-
-
     </RelativeLayout>
 
-
-    <AutoCompleteTextView
+    <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="65dp"
-        android:id="@+id/editto"
-        android:hint="@string/location"
-        android:layout_alignBaseline="@+id/textto"
-        android:layout_alignBottom="@+id/textto"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_toRightOf="@+id/textto"
-        android:layout_toEndOf="@+id/textto"
-        android:focusableInTouchMode="true"/>
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/to"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:id="@+id/textto"
+            android:layout_marginTop="24dp"
+            android:layout_alignParentTop="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/to"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:id="@+id/textto"
-        android:layout_marginTop="24dp"
-        android:layout_alignParentTop="true" />
+        <AutoCompleteTextView
+            android:layout_width="319dp"
+            android:layout_height="65dp"
+            android:id="@+id/editto"
+            android:hint="@string/location"
+            android:layout_alignBaseline="@+id/textto"
+            android:layout_alignBottom="@+id/textto"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@+id/textto"
+            android:layout_toEndOf="@+id/textto"
+            android:focusableInTouchMode="true"/>
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -130,26 +135,5 @@
             android:layout_alignTop="@+id/btnRoute"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
-
-        <RadioGroup
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:layout_gravity="bottom"
-            android:visibility="invisible">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/latti"
-                android:visibility="invisible"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/Longgi"
-                android:visibility="invisible"/>
-        </RadioGroup>
-
     </RelativeLayout>
-
-</RelativeLayout>
+</FrameLayout>

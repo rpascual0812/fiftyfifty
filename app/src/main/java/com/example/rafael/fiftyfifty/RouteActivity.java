@@ -9,12 +9,10 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -41,10 +39,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Locale;
-
-import static com.example.rafael.fiftyfifty.R.string.longitude;
 
 /**
  * Created by pogi on 9/20/2016.
@@ -58,19 +56,16 @@ public class RouteActivity extends FragmentActivity implements GoogleApiClient.O
     private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
     Button goMap, saveRoute;
     private TextView mAddressTextView, latLongTV, LongTV;
-    Double latitude, Longitude, latt, longg;
-    private String latitud, longitud;
-    Window window;
+    Double latitude, Longitude, lat1, long1;
+    String latitud, longitud;
     RelativeLayout relativeLayout, rLayout;
     GoogleMap mMap;
-    TextView latget, longget;
+    LatLng latLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.destination);
-        latget = (TextView) findViewById(R.id.latti);
-        longget = (TextView) findViewById(R.id.Longgi);
         relativeLayout = (RelativeLayout) findViewById(R.id.relativealert);
         rLayout = (RelativeLayout) findViewById(R.id.mapshow);
         latLongTV = (TextView) findViewById(R.id.latLongTV);
@@ -166,26 +161,13 @@ public class RouteActivity extends FragmentActivity implements GoogleApiClient.O
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(LOG_TAG, "Google Places API connection failed with error code: " + connectionResult.getErrorCode());
-
         Toast.makeText(this, "Google Places API connection failed with error code:" + connectionResult.getErrorCode(), Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        latget.setText(latitud);
-        longget.setText(longitud);
-        try{
-            String lat1 = latget.getText().toString();
-            String long1 = longget.getText().toString();
-            latt = Double.valueOf(lat1.trim()).doubleValue();
-            longg = Double.valueOf(long1.trim()).doubleValue();
-            LatLng latLng = new LatLng(latt, longg);
-            mMap.addMarker(new MarkerOptions().position(latLng).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        }catch (NumberFormatException e){
-            e.getStackTrace();
-        }
+        //mMap.addMarker(new MarkerOptions().position(latLng).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
     }
 
     private class GeocoderHandler extends Handler {
@@ -207,6 +189,23 @@ public class RouteActivity extends FragmentActivity implements GoogleApiClient.O
             LongTV.setText(locationAddress1);
             latitud = latLongTV.getText().toString();
             longitud = LongTV.getText().toString();
+            lat1 = Double.parseDouble(latitud);
+            long1 = Double.parseDouble(longitud);
+            latLng = new LatLng(lat1, long1);
+            DrawMarker(latLng);
         }
+    }
+
+    private void DrawMarker(LatLng point){
+        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
+        mMap.animateCamera(CameraUpdateFactory.zoomIn()); // Zoom in, animating the camera.
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(50), 2000, null);  // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+        CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+                .target(point)      // Sets the center of the map to Mountain View
+                .zoom(17)                   // Sets the zoom
+                .bearing(90)                // Sets the orientation of the camera to east
+                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                .build();                   // Creates a CameraPosition from the builder
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 }
