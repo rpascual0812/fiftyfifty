@@ -20,9 +20,13 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,6 +39,19 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by pogi on 9/6/2016.
@@ -49,15 +66,51 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     int locationCount2 = 0, locationCount = 0;
     final Context context = this;
     Circle circle;
+    DownloadTask placesDownloadTasker;
+    DownloadTask placeDetailsDownloadTasker;
+    ParserTask placesParserTasker;
+    ParserTask placeDetailsParserTasker;
+    final int PLACES=0;
+    final int PLACES_DETAILS=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.passenger);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map2);
+        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map2); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment.getMapAsync(this);
         atvPlaces2 = (AutoCompleteTextView) findViewById(R.id.Search2);
+        atvPlaces2.setThreshold(1);
+        atvPlaces2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                placesDownloadTasker = new DownloadTask(PLACES); // Creating a DownloadTask to download Google Places matching "s"
+                String url = getAutoCompleteUrl(s.toString()); // Getting url to the Google Places Autocomplete api
+                placesDownloadTasker.execute(url); // Start downloading Google Place This causes to execute doInBackground() of DownloadTask class
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        // Setting an item click listener for the AutoCompleteTextView dropdown list
+        atvPlaces2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int index, long id) {
+                ListView lv = (ListView) arg0;
+                SimpleAdapter adapter = (SimpleAdapter) arg0.getAdapter();
+                HashMap<String, String> hm = (HashMap<String, String>) adapter.getItem(index);
+                placeDetailsDownloadTasker = new DownloadTask(PLACES_DETAILS); // Creating a DownloadTask to download Places details of the selected place
+                String url = getPlaceDetailsUrl(hm.get("reference")); // Getting url to the Google Places details api
+                placeDetailsDownloadTasker.execute(url); // Start downloading Google Place Details This causes to execute doInBackground() of DownloadTask class
+            }
+        });
     }
 
     @Override
@@ -274,6 +327,139 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+    }
 
+    private String getAutoCompleteUrl(String place){
+        String key = "key=AIzaSyDnAm9rfFlNauZdySrtQB_1bsrA4el6yRc";  // Obtain browser key from https://code.google.com/apis/console
+        String input = "input="+place; // place to be be searched
+        String types = "types=geocode"; // place type to be searched
+        String sensor = "sensor=false"; // Sensor enabled
+        String parameters = input+"&"+types+"&"+sensor+"&"+key; // Building the parameters to the web service
+        String output = "json"; // Output format
+        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/"+output+"?"+parameters; // Building the url to the web service
+        return url;
+    }
+
+    private String getPlaceDetailsUrl(String ref){
+        String key = "key=AIzaSyDnAm9rfFlNauZdySrtQB_1bsrA4el6yRc"; // Obtain browser key from https://code.google.com/apis/console
+        String reference = "reference="+ref; // reference of place
+        String sensor = "sensor=false"; // Sensor enabled
+        String parameters = reference+"&"+sensor+"&"+key; // Building the parameters to the web service
+        String output = "json"; // Output format
+        String url = "https://maps.googleapis.com/maps/api/place/details/"+output+"?"+parameters; // Building the url to the web service
+        return url;
+    }
+
+    // Fetches data from url passed
+    private class DownloadTask extends AsyncTask<String, Void, String> {
+        private int downloadType = 0;
+        public DownloadTask(int type) {this.downloadType = type;} // Constructor
+        @Override
+        protected String doInBackground(String... url) {
+            String data = ""; // For storing data from web service
+            try {
+                data = downloadUrl(url[0]); // Fetching the data from web service
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            switch(downloadType){
+                case PLACES:
+                    placesParserTasker = new ParserTask(PLACES); // Creating ParserTask for parsing Google Places
+                    placesParserTasker.execute(result); // Start parsing google places json data This causes to execute doInBackground() of ParserTask class
+                    break;
+
+                case PLACES_DETAILS :
+                    placeDetailsParserTasker = new ParserTask(PLACES_DETAILS); // Creating ParserTask for parsing Google Places
+                    placeDetailsParserTasker.execute(result); // Starting Parsing the JSON string This causes to execute doInBackground() of ParserTask class
+            }
+        }
+    }
+
+    /** A class to parse the Google Places in JSON format */
+    private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String,String>>> {
+        int parserType = 0;
+        public ParserTask(int type){this.parserType = type;}
+
+        @Override
+        protected List<HashMap<String, String>> doInBackground(String... jsonData) {
+            JSONObject jObject;
+            List<HashMap<String, String>> list = null;
+            try{
+                jObject = new JSONObject(jsonData[0]);
+                switch(parserType){
+                    case PLACES :
+                        PlaceJSONParser placeJsonParser = new PlaceJSONParser();
+                        list = placeJsonParser.parse(jObject); // Getting the parsed data as a List construct
+                        break;
+                    case PLACES_DETAILS :
+                        PlaceDetailJSONParser placeDetailsJsonParser = new PlaceDetailJSONParser();
+                        list = placeDetailsJsonParser.parse(jObject); // Getting the parsed data as a List construct
+                }
+            }catch(Exception e){
+                Log.d("Exception",e.toString());
+            }
+            return list;
+        }
+
+        @Override
+        protected void onPostExecute(List<HashMap<String, String>> result) {
+            switch(parserType){
+                case PLACES :
+                    String[] from = new String[] { "description"};
+                    int[] to = new int[] { android.R.id.text1 };
+                    SimpleAdapter adapter = new SimpleAdapter(getBaseContext(), result, android.R.layout.simple_list_item_1, from, to);// Creating a SimpleAdapter for the AutoCompleteTextView
+                    atvPlaces2.setAdapter(adapter); // Setting the adapter
+                    break;
+                case PLACES_DETAILS :
+                    HashMap<String, String> hm = result.get(0);
+                    latitude = Double.parseDouble(hm.get("lat")); // Getting latitude from the parsed data
+                    longitude = Double.parseDouble(hm.get("lng")); // Getting longitude from the parsed data
+                    LatLng point = new LatLng(latitude, longitude);
+                    drawMarker(point);
+                    /*CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(point);
+                    CameraUpdate cameraZoom = CameraUpdateFactory.zoomBy(5);
+                    mMap.moveCamera(cameraPosition);// Showing the user input location in the Google Map
+                    mMap.animateCamera(cameraZoom);
+                    MarkerOptions options = new MarkerOptions();
+                    options.position(point);
+                    options.title("Position");
+                    options.snippet("Latitude:"+latitude+",Longitude:"+longitude);
+                    mMap.addMarker(options); // Adding the marker in the Google Map*/
+                    break;
+            }
+        }
+    }
+
+    /** A method to download json data from url */
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try{
+            URL url = new URL(strUrl);
+            urlConnection = (HttpURLConnection) url.openConnection();  // Creating an http connection to communicate with url
+            urlConnection.connect(); // Connecting to url
+            iStream = urlConnection.getInputStream(); // Reading data from url
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+            StringBuffer sb  = new StringBuffer();
+            String line = "";
+            while( ( line = br.readLine())  != null){
+                sb.append(line);
+            }
+            data = sb.toString();
+            br.close();
+        }catch(Exception e){
+            Log.d("Exception while downloading url", e.toString());
+        }finally{
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
     }
 }
