@@ -339,7 +339,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
         if(markerPoints.size()==1){
-            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car))/*.visible(false)*/;
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false);
         }else if(markerPoints.size()==2){
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car));
         }
@@ -533,7 +533,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     points.add(position);
                 }
                 lineOptions.addAll(points); // Adding all the points in the route to LineOptions
-                lineOptions.width(2);
+                lineOptions.width(12);
                 lineOptions.color(Color.RED);
             }
             mMap.addPolyline(lineOptions); // Drawing polyline in the Google Map for the i-th route
