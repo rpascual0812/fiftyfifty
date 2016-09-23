@@ -38,6 +38,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -75,7 +76,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private double latitude , longitude;
     SharedPreferences sharedPreferences , sharedPreferences2;
-    int locationCount = 0, locationCount2 = 0;
+    int locationCount = 0, locationCount2 = 0, IntentCount = 0;
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
@@ -86,7 +87,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ParserTasker placeDetailsParserTasker;
     final int PLACES=0;
     final int PLACES_DETAILS=1;
-    int IntentCount = 0;
     Double lat, Long, lat1, long1;
     TextView latitude2, longitude2;
     String latitude1, longitude1;
@@ -102,9 +102,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         longitude1 = iintent.getStringExtra("longitude");
         latitude2.setText(latitude1);
         longitude2.setText(longitude1);
-        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        mapFragment.getMapAsync(this);
-        markerPoints = new ArrayList<LatLng>(); // Initializing
+        // Getting Google Play availability status
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getBaseContext());
+        if (status != ConnectionResult.SUCCESS) { // Google Play Services are not available
+            int requestCode = 10;
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this, requestCode);
+            dialog.show();
+        } else { // Google Play Services are available
+            markerPoints = new ArrayList<LatLng>(); // Initializing
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            mapFragment.getMapAsync(this);
+        }
         atvPlaces = (AutoCompleteTextView) findViewById(R.id.Search);
         atvPlaces.setThreshold(1);
         atvPlaces.addTextChangedListener(new TextWatcher() {
@@ -136,6 +144,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 placeDetailsDownloadTasker.execute(url); // Start downloading Google Place Details This causes to execute doInBackground() of DownloadTask class
             }
         });
+
+        // Checks, whether start and end locations are captured
     }
     /**
      * Manipulates the map once available.
@@ -157,6 +167,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lat = latitude;
             Long = longitude;
             LatLng current_location = new LatLng(latitude, longitude);
+            drawMarker(current_location);
             //mMap.addMarker(new MarkerOptions().position(current_location).title("Here you are").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(current_location));
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -240,15 +251,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-        // Checks, whether start and end locations are captured
-        if(markerPoints.size() >= 1){
-            LatLng origin = markerPoints.get(0);
-            LatLng dest = markerPoints.get(1);
-            String url = getDirectionsUrl(origin, dest); // Getting URL to the Google Directions API
-            DownloadTask downloadTask = new DownloadTask();
-            downloadTask.execute(url); // Start downloading json data from Google Directions API
-        }
-
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
             public View getInfoWindow(Marker arg0) {
@@ -296,6 +298,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 alertDialog.show();
             }
         });
+
         Intent mintent = getIntent();
         IntentCount = mintent.getIntExtra("Count" , 0);
         if (IntentCount == 0){
@@ -335,7 +338,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         markerPoints.add(point); // Adding new item to the ArrayList
         MarkerOptions markerOptions = new MarkerOptions(); // Creating an instance of MarkerOptions
         markerOptions.position(point); // Setting latitude and longitude for the marker
-        Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
+        if(markerPoints.size()==1){
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car))/*.visible(false)*/;
+        }else if(markerPoints.size()==2){
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car));
+        }
+        else {
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car));
+        }
+        mMap.addMarker(markerOptions); // Add new marker to the Google Map Android API V2
+        //Marker marker = mMap.addMarker(new MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))); // Adding marker on the Google Map
         mMap.animateCamera(CameraUpdateFactory.zoomIn()); // Zoom in, animating the camera.
         mMap.animateCamera(CameraUpdateFactory.zoomTo(50), 2000, null);  // Zoom out to zoom level 10, animating with a duration of 2 seconds.
         CameraPosition cameraPosition = new CameraPosition.Builder() // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
@@ -345,6 +357,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .tilt(30)                   // Sets the tilt of the camera to 30 degrees
                 .build();                   // Creates a CameraPosition from the builder
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        if(markerPoints.size() >= 2){
+            LatLng origin = markerPoints.get(0);
+            LatLng dest = markerPoints.get(1);
+            String url = getDirectionsUrl(origin, dest); // Getting URL to the Google Directions API
+            DownloadTask downloadTask = new DownloadTask();
+            downloadTask.execute(url); // Start downloading json data from Google Directions API
+        }
     }
 
     private void drawMarker2(LatLng point){
@@ -418,18 +437,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private String getDirectionsUrl(LatLng origin,LatLng dest){
         String str_origin = "origin="+origin.latitude+","+origin.longitude; // Origin of route
-        String str_dest = "destination="+dest.latitude+","+dest.longitude;  // Destination of route
+        String str_dest = "destination="+dest.latitude+","+dest.longitude; // Destination of route
         String sensor = "sensor=false";  // Sensor enabled
-        String waypoints = "";  // Waypoints
-        for(int i=2;i<markerPoints.size();i++){
-            LatLng point  = (LatLng) markerPoints.get(i);
-            if(i==2)
-                waypoints = "waypoints=";
-            waypoints += point.latitude + "," + point.longitude + "|";
-        }
-        String parameters = str_origin+"&"+str_dest+"&"+sensor+"&"+waypoints; // Building the parameters to the web service
+        String parameters = str_origin+"&"+str_dest+"&"+sensor;  // Building the parameters to the web service
         String output = "json"; // Output format
-        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;  // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters; // Building the url to the web service
         return url;
     }
 
@@ -440,7 +452,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         HttpURLConnection urlConnection = null;
         try{
             URL url = new URL(strUrl);
-            urlConnection = (HttpURLConnection) url.openConnection(); // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();  // Creating an http connection to communicate with url
             urlConnection.connect(); // Connecting to url
             iStream = urlConnection.getInputStream(); // Reading data from url
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
@@ -474,8 +486,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return data;
         }
 
-        // Executes in UI thread, after the execution of
-        // doInBackground()
+        // Executes in UI thread, after the execution of doInBackground()
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
@@ -484,17 +495,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    /** A class to parse the Google Places in JSON format */
+    /** A class to parse the Google Directions in JSON format */
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+
         // Parsing the data in non-ui thread
         @Override
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
             JSONObject jObject;
             List<List<HashMap<String, String>>> routes = null;
             try{
                 jObject = new JSONObject(jsonData[0]);
                 DirectionsJSONParser parser = new DirectionsJSONParser();
-                routes = parser.parse(jObject);  // Starts parsing data
+                routes = parser.parse(jObject); // Starts parsing data
             }catch(Exception e){
                 e.printStackTrace();
             }
@@ -510,7 +523,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             for(int i=0;i<result.size();i++){
                 points = new ArrayList<LatLng>();
                 lineOptions = new PolylineOptions();
-                List<HashMap<String, String>> path = result.get(i); // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);  // Fetching i-th route
                 // Fetching all the points in i-th route
                 for(int j=0;j<path.size();j++){
                     HashMap<String,String> point = path.get(j);
