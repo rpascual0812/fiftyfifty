@@ -342,6 +342,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car)).visible(false);
         }else if(markerPoints.size()==2){
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car));
+            locationCount++;
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(LocationsDB.FIELD_LAT, point.latitude); // Setting latitude in ContentValues
+            contentValues.put(LocationsDB.FIELD_LNG, point.longitude); // Setting longitude in ContentValues
+            contentValues.put(LocationsDB.FIELD_ZOOM, mMap.getCameraPosition().zoom); // Setting zoom in ContentValues
+            LocationInsertTask insertTask = new LocationInsertTask(); // Creating an instance of LocationInsertTask
+            insertTask.execute(contentValues); // Storing the latitude, longitude and zoom level to SQLite database
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("lat" + Integer.toString((locationCount - 1)), Double.toString(point.latitude)); // Storing the latitude for the i-th location
+            editor.putString("lng" + Integer.toString((locationCount - 1)), Double.toString(point.longitude));  // Storing the longitude for the i-th location
+            editor.putInt("locationCount", locationCount); // Storing the count of locations or marker count
+            editor.putString("zoom", Float.toString(mMap.getCameraPosition().zoom));
+            editor.commit();
         }
         else {
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.car));
