@@ -21,6 +21,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -42,6 +43,7 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
     private GoogleMap mMap;
     private double latitude;
     private double longitude;
+    AutoCompleteTextView atvPlaces2;
     SharedPreferences sharedPreferences;
     SharedPreferences sharedPreferences2;
     int locationCount2 = 0, locationCount = 0;
@@ -55,12 +57,12 @@ public class PassengerActivity extends FragmentActivity implements OnMapReadyCal
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map2);
         mapFragment.getMapAsync(this);
+        atvPlaces2 = (AutoCompleteTextView) findViewById(R.id.Search2);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        EditText searchLocation;
         mMap.setBuildingsEnabled(false);
         GPSTracker gps = new GPSTracker(this);
         if (gps.canGetLocation()) {

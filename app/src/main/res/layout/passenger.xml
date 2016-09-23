@@ -16,7 +16,7 @@
         android:layout_height="fill_parent"
         tools:context="com.example.rafael.fiftyfifty.PassengerActivity"/>
 
-    <EditText
+    <com.example.rafael.fiftyfifty.CustomAutoCompleteTextView
         android:layout_width="183dp"
         android:layout_height="63dp"
         android:id="@+id/Search2"

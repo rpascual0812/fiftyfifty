@@ -80,7 +80,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     final Context context = this;
     Circle circle;
     ArrayList<LatLng> markerPoints;
-    AutoCompleteTextView atvPlaces,fromPlaces, toPlaces;
+    AutoCompleteTextView atvPlaces;
     DownloadTasker placesDownloadTasker;
     DownloadTasker placeDetailsDownloadTasker;
     ParserTasker placesParserTasker;
@@ -308,6 +308,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             alertdialog.setPositiveButton("Next", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    Intent gintent = new Intent(getApplicationContext(), PassengerActivity.class);
+                    gintent.putExtra("latitude", lat);
+                    gintent.putExtra("longitude", Long);
                     Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
                     intent.putExtra("latitude", lat);
                     intent.putExtra("longitude", Long);

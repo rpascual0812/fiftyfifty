@@ -119,6 +119,7 @@ public class RouteActivity extends FragmentActivity implements GoogleApiClient.O
     private AdapterView.OnItemClickListener AutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            mMap.clear(); // Removing the marker and circle from the Google Map
             relativeLayout.setVisibility(view.INVISIBLE);
             rLayout.setVisibility(view.VISIBLE);
             final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
